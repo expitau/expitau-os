@@ -28,9 +28,9 @@ declare -g PACMAN_OPT_NOCACHE='0'
 
 # [DISK]: PARTITIONING (GPT+UEFI)
 pacman --noconfirm --sync --needed parted
-mkdir -p '/'
-lsblk --noheadings --output='MOUNTPOINTS' | grep -w ${OSTREE_SYS_ROOT} | xargs -r umount --lazy --verbose
-parted -a optimal -s ${OSTREE_DEV_DISK} -- \
+mkdir -p '/tmp/chroot'
+lsblk --noheadings --output='MOUNTPOINTS' | grep -w /tmp/chroot | xargs -r umount --lazy --verbose
+parted -a optimal -s /dev/nvme0n1 -- \
     mklabel gpt \
     mkpart SYS_BOOT fat32 0% 257MiB \
     set 1 esp on \
@@ -44,15 +44,15 @@ mkfs.xfs -L SYS_ROOT -f /dev/nvme0n1p2 -n ftype=1
 mkfs.xfs -L SYS_HOME -f /dev/nvme0n1p3 -n ftype=1
 
 # [DISK]: BUILD DIRECTORY
-mount --mkdir /dev/nvme0n1p2 /
-mount --mkdir /dev/nvme0n1p1 /boot/efi
+mount --mkdir /dev/nvme0n1p2 /tmp/chroot
+mount --mkdir /dev/nvme0n1p1 /tmp/chroot/boot/efi
 
 # [OSTREE]: FIRST INITIALIZATION
 pacman -Sy --needed ostree which
-ostree admin init-fs --sysroot="/" --modern /
-ostree admin stateroot-init --sysroot="/" archlinux
-ostree init --repo="/ostree/repo" --mode='bare'
-ostree config --repo="/ostree/repo" set sysroot.bootprefix 1
+ostree admin init-fs --sysroot="/tmp/chroot" --modern /tmp/chroot
+ostree admin stateroot-init --sysroot="/tmp/chroot" archlinux
+ostree init --repo="/tmp/chroot/ostree/repo" --mode='bare'
+ostree config --repo="/tmp/chroot/ostree/repo" set sysroot.bootprefix 1
 
 # [OSTREE]: BUILD ROOTFS
 # Add support for overlay storage driver in LiveCD
@@ -153,23 +153,23 @@ rm -r /tmp/rootfs/var/*
 
 # [OSTREE]: CREATE COMMIT
 # Update repository and boot entries in GRUB2
-ostree commit --repo="/ostree/repo" --branch="archlinux/latest" --tree=dir="/tmp/rootfs"
-ostree admin deploy --sysroot="/" --karg="root=LABEL=SYS_ROOT rw" --os="archlinux" --no-merge --retain archlinux/latest
+ostree commit --repo="/tmp/chroot/ostree/repo" --branch="archlinux/latest" --tree=dir="/tmp/rootfs"
+ostree admin deploy --sysroot="/tmp/chroot" --karg="root=LABEL=SYS_ROOT rw" --os="archlinux" --no-merge --retain archlinux/latest
 
 # [BOOTLOADER]: FIRST BOOT
 # | Todo: improve grub-mkconfig
-grub-install --target='x86_64-efi' --efi-directory="/boot/efi" --boot-directory="/boot/efi/EFI" --bootloader-id="archlinux" --removable /dev/nvme0n1p1
+grub-install --target='x86_64-efi' --efi-directory="/tmp/chroot/boot/efi" --boot-directory="/tmp/chroot/boot/efi/EFI" --bootloader-id="archlinux" --removable /dev/nvme0n1p1
 
-local OSTREE_SYS_PATH=$(ls -d /ostree/deploy/archlinux/deploy/* | head -n 1)
+local OSTREE_SYS_PATH=$(ls -d /tmp/chroot/ostree/deploy/archlinux/deploy/* | head -n 1)
 
 rm -rfv ${OSTREE_SYS_PATH}/boot/*
-mount --mkdir --rbind /boot ${OSTREE_SYS_PATH}/boot
-mount --mkdir --rbind /ostree ${OSTREE_SYS_PATH}/sysroot/ostree
+mount --mkdir --rbind /tmp/chroot/boot ${OSTREE_SYS_PATH}/boot
+mount --mkdir --rbind /tmp/chroot/ostree ${OSTREE_SYS_PATH}/sysroot/ostree
 
 for i in /dev /proc /sys; do mount -o bind $i ${OSTREE_SYS_PATH}${i}; done
 chroot ${OSTREE_SYS_PATH} /bin/bash -c 'grub-mkconfig -o /boot/efi/EFI/grub/grub.cfg'
 
-umount --recursive /
+umount --recursive /tmp/chroot
 
 
 
