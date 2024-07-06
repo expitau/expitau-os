@@ -58,7 +58,7 @@ RUN systemctl enable systemd-timesyncd.service
 
 RUN echo 'My specific container setup' > /myfile
 
-FROM scratch AS export
+FROM scratch AS ostreeify
 
 COPY --from=downloader /rootfs/root.x86_64 /
 COPY --from=final / /mnt
@@ -87,4 +87,8 @@ RUN mv "/mnt/home" "/mnt/var/" && \
 	rm -r "/mnt/boot" && \
 	mkdir "/mnt/boot"
 
-ENTRYPOINT ostree commit --repo /sysroot/ostree/repo --tree=dir=/mnt --branch=archlinux
+FROM scratch as export
+
+COPY --from=ostreeify /mnt /
+
+# ENTRYPOINT ostree commit --repo /sysroot/ostree/repo --tree=dir=/mnt --branch=archlinux
