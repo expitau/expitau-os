@@ -7,7 +7,7 @@ RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/
 
 # Perform a clean system installation with latest Arch Linux packages in chroot to correctly execute hooks, this uses host's Pacman
 RUN pacman --noconfirm --sync --needed arch-install-scripts \
-    && pacstrap -K -P /mnt base \
+    && pacstrap -K -P /mnt base base-devel linux linux-headers linux-firmware intel-ucode dosfstools btrfs-progs grub mkinitcpio ostree \
     && cp -av /etc/pacman.d/ /mnt/etc/
 
 # Reusable base template
@@ -31,9 +31,6 @@ RUN echo 'LANG=en_US.UTF-8' > /etc/locale.conf \
 RUN mkdir -p /etc/mkinitcpio.conf.d \
     && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block encrypt btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
 
-# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm -S linux linux-headers linux-firmware intel-ucode dosfstools btrfs-progs grub mkinitcpio podman ostree which
-
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
     cat /boot/*-ucode.img /boot/initramfs-linux-fallback.img > ${moduledir}/initramfs.img
@@ -52,23 +49,18 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root
     && echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot ext4 defaults 1 2" >> /etc/fstab \
     && echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
-# Networking
-RUN pacman --noconfirm --sync networkmanager \
-    && systemctl enable NetworkManager.service \
-    && systemctl mask systemd-networkd-wait-online.service
+# Install software
+RUN pacman --noconfirm --sync podman which git networkmanager gnome hyprland
+
+# Services
+RUN systemctl enable NetworkManager.service && \
+    systemctl mask systemd-networkd-wait-online.service && \
+    systemctl enable gdm.service
 
 # Root password
 RUN echo "root:ostree" | chpasswd
 
-# SSHD
-RUN pacman --noconfirm -S openssh \
-    && systemctl enable sshd \
-    && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-
-RUN echo "My custom ostree stuff" > /myfile
-
-RUN  mv /etc /usr/ && \
-    rm -r /home && \
+RUN rm -r /home && \
     ln -s var/home /home && \
     rm -r /mnt && \
     ln -s var/mnt /mnt && \
@@ -101,6 +93,23 @@ RUN  mv /etc /usr/ && \
     echo 'd /var/usrlocal/src 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo 'd /run/media 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     mv /var/lib/pacman /usr/lib/ && \
-    sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
+    sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
-    rm -r /var/*
+    rm -r /var/* && \
+    mkdir /var/home && \
+    mkdir /var/mnt && \
+    mkdir /var/opt && \
+    mkdir /var/roothome && \
+    mkdir /var/srv && \
+    mkdir /var/usrlocal
+
+# # Add user
+# ARG USER="nathan"
+# RUN groupadd -g 1000 -o $USER && \
+#     useradd -m -u 1000 -g 1000 -o $USER && \
+#     echo "$USER:$USER" | chpasswd && \
+#     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
+#     touch /var/home/$USER && \
+#     chown $USER:$USER /var/home/$USER
+
+RUN mv /etc /usr/
