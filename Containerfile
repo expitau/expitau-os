@@ -45,7 +45,7 @@ RUN pacman --noconfirm --sync \
     linux-headers \
     \
     linux-firmware \
-    amd-ucode \
+    intel-ucode \
     \
     dosfstools \
     btrfsprogs \
