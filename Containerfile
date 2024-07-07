@@ -43,7 +43,7 @@ RUN ostree admin init-fs --sysroot /mnt --modern /mnt && \
 	ostree admin stateroot-init --sysroot /mnt archlinux && \
 	ostree config --repo /mnt/ostree/repo set sysroot.bootprefix 1
 
-RUN pacstrap -c -G -M /mnt base linux linux-firmware grub ostree
+RUN pacstrap -c -G -M /mnt base linux linux-headers linux-firmware grub mkinitcpio podman ostree which
 
 FROM scratch AS final
 COPY --from=live /mnt /
@@ -61,24 +61,6 @@ RUN echo 'My specific container setup' > /myfile
 # Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d \
  && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
-
-# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm --sync \
-    linux \
-    linux-headers \
-    \
-    linux-firmware \
-    amd-ucode \
-    \
-    dosfstools \
-    xfsprogs \
-    \
-    grub \
-    mkinitcpio \
-    \
-    podman \
-    ostree \
-    which
 
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
