@@ -70,8 +70,8 @@ RUN echo "root:ostree" | chpasswd
 
 # Add user
 ARG USER="nathan"
-RUN groupadd -g $GID -o $USER && \
-    useradd -m -u $UID -g $GID -o $USER && \
+RUN groupadd -g 1000 -o $USER && \
+    useradd -m -u 1000 -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
     # usermod -aG docker $USER && \
