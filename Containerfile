@@ -13,7 +13,6 @@ RUN pacman --noconfirm --sync --needed arch-install-scripts \
 # Reusable base template
 FROM scratch AS base
 COPY --from=rootfs /mnt /
-RUN pacman --noconfirm -S base-devel linux linux-headers linux-firmware intel-ucode dosfstools btrfs-progs grub mkinitcpio ostree which
 
 # Clock
 ARG SYSTEM_OPT_TIMEZONE="Etc/UTC"
@@ -31,6 +30,9 @@ RUN echo 'LANG=en_US.UTF-8' > /etc/locale.conf \
 # Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d \
     && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block encrypt btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
+
+# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
+RUN pacman --noconfirm -S linux linux-headers linux-firmware intel-ucode dosfstools btrfs-progs grub mkinitcpio podman ostree which
 
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
@@ -61,7 +63,15 @@ RUN systemctl enable NetworkManager.service && \
 # Root password
 RUN echo "root:ostree" | chpasswd
 
-RUN rm -r /home && \
+# SSHD
+RUN pacman --noconfirm -S openssh \
+    && systemctl enable sshd \
+    && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+RUN echo "My custom ostree stuff" > /myfile
+
+RUN  mv /etc /usr/ && \
+    rm -r /home && \
     ln -s var/home /home && \
     rm -r /mnt && \
     ln -s var/mnt /mnt && \
@@ -94,23 +104,6 @@ RUN rm -r /home && \
     echo 'd /var/usrlocal/src 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo 'd /run/media 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     mv /var/lib/pacman /usr/lib/ && \
-    sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /etc/pacman.conf && \
+    sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
-    rm -r /var/* && \
-    mkdir /var/home && \
-    mkdir /var/mnt && \
-    mkdir /var/opt && \
-    mkdir /var/roothome && \
-    mkdir /var/srv && \
-    mkdir /var/usrlocal
-
-# # Add user
-# ARG USER="nathan"
-# RUN groupadd -g 1000 -o $USER && \
-#     useradd -m -u 1000 -g 1000 -o $USER && \
-#     echo "$USER:$USER" | chpasswd && \
-#     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
-#     touch /var/home/$USER && \
-#     chown $USER:$USER /var/home/$USER
-
-RUN mv /etc /usr/
+    rm -r /var/*
