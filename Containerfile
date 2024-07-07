@@ -64,7 +64,7 @@ RUN mkdir -p /etc/mkinitcpio.conf.d \
 
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
-    cat /boot/*-ucode.img /boot/initramfs-linux-fallback.img > ${moduledir}/initramfs.img
+    cat /boot/initramfs-linux-fallback.img > ${moduledir}/initramfs.img
 
 # OSTree: Bootloader integration
 RUN cp /usr/lib/libostree/* /etc/grub.d && \
