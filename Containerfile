@@ -14,9 +14,6 @@ RUN pacman --noconfirm --sync --needed arch-install-scripts \
 FROM scratch AS base
 COPY --from=rootfs /mnt /
 
-# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm --sync podman ostree which git networkmanager gnome
-
 # Clock
 ARG SYSTEM_OPT_TIMEZONE="Etc/UTC"
 RUN ln --symbolic --force /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
@@ -52,7 +49,10 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root
     && echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot ext4 defaults 1 2" >> /etc/fstab \
     && echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
-# Networking
+# Install software
+RUN pacman --noconfirm --sync podman ostree which git networkmanager gnome
+
+# Services
 RUN systemctl enable NetworkManager.service && \
     systemctl mask systemd-networkd-wait-online.service && \
     systemctl enable gdm.service
