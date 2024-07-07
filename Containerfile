@@ -97,7 +97,12 @@ RUN mv /etc /usr/ && \
     sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
     rm -r /var/* && \
-    mkdir /var/home
+    mkdir /var/home && \
+    mkdir /var/mnt && \
+    mkdir /var/opt && \
+    mkdir /var/roothome && \
+    mkdir /var/srv && \
+    mkdir /var/usrlocal
 
 # Add user
 ARG USER="nathan"
