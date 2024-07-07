@@ -34,7 +34,7 @@ RUN echo 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' > /etc/pacman
 ###
 
 RUN install -d /mnt/etc
-RUN echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard keymap consolefont block filesystems fsck)" > /mnt/etc/mkinitcpio.conf
+RUN echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard keymap consolefont block btrfs filesystems fsck)" > /mnt/etc/mkinitcpio.conf
 
 RUN pacman --noconfirm -Syyu
 RUN pacman --noconfirm -S ostree
@@ -69,6 +69,8 @@ RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
 # OSTree: Bootloader integration
 RUN cp /usr/lib/libostree/* /etc/grub.d && \
 	chmod +x /etc/grub.d/15_ostree
+
+RUN RUN echo "root:ostree" | chpasswd
 
 FROM scratch AS ostreeify
 
