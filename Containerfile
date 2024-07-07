@@ -60,8 +60,7 @@ RUN systemctl enable NetworkManager.service && \
 # Root password
 RUN echo "root:ostree" | chpasswd
 
-RUN mv /etc /usr/ && \
-    rm -r /home && \
+RUN rm -r /home && \
     ln -s var/home /home && \
     rm -r /mnt && \
     ln -s var/mnt /mnt && \
@@ -94,7 +93,7 @@ RUN mv /etc /usr/ && \
     echo 'd /var/usrlocal/src 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo 'd /run/media 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     mv /var/lib/pacman /usr/lib/ && \
-    sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
+    sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
     rm -r /var/* && \
     mkdir /var/home && \
@@ -104,7 +103,6 @@ RUN mv /etc /usr/ && \
     mkdir /var/srv && \
     mkdir /var/usrlocal
 
-RUN echo "CREATE_MAIL_SPOOL no" >> /etc/default/useradd
 # Add user
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
@@ -113,3 +111,5 @@ RUN groupadd -g 1000 -o $USER && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /usr/etc/sudoers.d/$USER && \
     touch /var/home/$USER && \
     chown $USER:$USER /var/home/$USER
+
+RUN mv /etc /usr/
