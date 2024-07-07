@@ -32,7 +32,7 @@ RUN mkdir -p /etc/mkinitcpio.conf.d \
     && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block encrypt btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
 
 # Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm -S linux linux-headers linux-firmware intel-ucode dosfstools btrfs-progs grub mkinitcpio podman ostree which
+RUN pacman --noconfirm -S base-devel linux linux-headers linux-firmware intel-ucode dosfstools btrfs-progs grub mkinitcpio podman ostree which
 
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
