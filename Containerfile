@@ -71,21 +71,47 @@ RUN pacman --noconfirm -Syyu
 RUN pacman --noconfirm -S ostree
 
 # Now create ostree repo and commit /mnt to it 
-RUN mv "/mnt/home" "/mnt/var/" && \
-	ln -s var/home "/mnt/home" && \
-	mv "/mnt/mnt" "/mnt/var/" && \
-	ln -s var/mnt "/mnt/mnt" && \
-	mv "/mnt/root" "/mnt/var/roothome" && \
-	ln -s var/roothome "/mnt/root" && \
-	rm -r "/mnt/usr/local" && \
-	ln -s ../var/usrlocal "/mnt/usr/local" && \
-	mv "/mnt/srv" "/mnt/var/srv" && \
-	ln -s var/srv "/mnt/srv" && \
-	mkdir "/mnt/sysroot" && \
-	ln -s sysroot/ostree "/mnt/ostree" && \
-	mv "/mnt/etc" "/mnt/usr/" && \
-	rm -r "/mnt/boot" && \
-	mkdir "/mnt/boot"
+
+RUN mv /mnt/etc /mnt/usr/ && \
+    rm -r /mnt/home && \
+    ln -s var/home /mnt/home && \
+    rm -r /mnt/mnt && \
+    ln -s var/mnt /mnt/mnt && \
+    rm -r /mnt/opt && \
+    ln -s var/opt /mnt/opt && \
+    rm -r /mnt/root && \
+    ln -s var/roothome /mnt/root && \
+    rm -r /mnt/srv && \
+    ln -s var/srv /mnt/srv && \
+    mkdir /mnt/sysroot && \
+    ln -s sysroot/ostree /mnt/ostree && \
+    rm -r /mnt/usr/local && \
+    ln -s ../var/usrlocal /mnt/usr/local && \
+    echo 'd /var/home 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/lib 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/log/journal 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/mnt 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/opt 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/roothome 0700 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/srv 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/bin 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/etc 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/games 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/include 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/lib 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/man 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/sbin 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/share 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /var/usrlocal/src 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    echo 'd /run/media 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    mv /mnt/var/lib/pacman /mnt/usr/lib/ && \
+    sed -i \ && \
+        -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' \ && \
+        -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' \ && \
+        /mnt/usr/etc/pacman.conf && \
+    mkdir /mnt/usr/lib/pacmanlocal && \
+    rm -r /mnt/var/* && \
 
 FROM scratch as export
 
