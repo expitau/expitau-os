@@ -34,7 +34,6 @@ RUN echo 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' > /etc/pacman
 ###
 
 RUN install -d /mnt/etc
-RUN echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard keymap consolefont block btrfs filesystems fsck)" > /mnt/etc/mkinitcpio.conf
 
 RUN pacman --noconfirm -Syyu
 RUN pacman --noconfirm -S ostree
@@ -43,7 +42,7 @@ RUN ostree admin init-fs --sysroot /mnt --modern /mnt && \
 	ostree admin stateroot-init --sysroot /mnt archlinux && \
 	ostree config --repo /mnt/ostree/repo set sysroot.bootprefix 1
 
-RUN pacstrap -c -G -M /mnt base linux linux-headers linux-firmware grub mkinitcpio podman ostree which
+RUN pacstrap -c -G -M /mnt base linux linux-headers linux-firmware grub mkinitcpio btrfs-progs podman ostree which
 
 FROM scratch AS final
 COPY --from=live /mnt /
@@ -60,7 +59,7 @@ RUN echo 'My specific container setup' > /myfile
 
 # Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d \
- && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
+ && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard keymap consolefont block btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
 
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
