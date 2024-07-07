@@ -1,7 +1,3 @@
-# |
-# | ROOTFS
-# |
-
 # Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
 FROM docker.io/archlinux/archlinux:latest AS rootfs
 
@@ -14,16 +10,12 @@ RUN pacman --noconfirm --sync --needed arch-install-scripts \
     && pacstrap -K -P /mnt base base-devel linux linux-headers linux-firmware intel-ucode btrfs-progs grub mkinitcpio \
     && cp -av /etc/pacman.d/ /mnt/etc/
 
-# |
-# | BASE
-# |
-
 # Reusable base template
 FROM scratch AS base
 COPY --from=rootfs /mnt /
 
 # Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm --sync podman ostree which git networkmanager
+RUN pacman --noconfirm --sync podman ostree which git networkmanager gnome
 
 # Clock
 ARG SYSTEM_OPT_TIMEZONE="Etc/UTC"
