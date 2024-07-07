@@ -59,6 +59,8 @@ RUN pacman --noconfirm --sync podman git networkmanager gnome nano
 
 RUN pacman --noconfirm -S spice-vdagent xf86-video-qxl
 
+RUN pacman --noconfirm -S fastfetch
+
 # Services
 RUN systemctl enable NetworkManager.service && \
     systemctl mask systemd-networkd-wait-online.service && \
