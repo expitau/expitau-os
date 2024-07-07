@@ -95,7 +95,7 @@ RUN pacman --noconfirm -S openssh \
     && systemctl enable sshd \
     && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
-RUN echo "My custom ostree" > /myfile
+RUN echo "My custom ostree stuff" > /myfile
 
 RUN  mv /etc /usr/ && \
     rm -r /home && \
