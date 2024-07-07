@@ -77,8 +77,10 @@ RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disab
 # Mount disk locations
 ARG OSTREE_SYS_BOOT_LABEL="SYS_BOOT"
 ARG OSTREE_SYS_ROOT_LABEL="fedora_fedora"
-RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         btrfs  rw,relatime,noatime,subvol=root 0 0" >> /etc/fstab \
-    && echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
+ARG OSTREE_SYS_EFI_LABEL="SYS_EFI"
+RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root 0 0" >> /etc/fstab \
+    && echo "UUID=${OSTREE_SYS_BOOT_LABEL} /boot ext4 defaults 1 2" \
+    && echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 # Networking
 RUN pacman --noconfirm --sync networkmanager \
