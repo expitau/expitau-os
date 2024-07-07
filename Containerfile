@@ -102,7 +102,8 @@ RUN mv /etc /usr/ && \
     mkdir /var/opt && \
     mkdir /var/roothome && \
     mkdir /var/srv && \
-    mkdir /var/usrlocal
+    mkdir /var/usrlocal && \
+    mkdir /var/spool
 
 # Add user
 ARG USER="nathan"
