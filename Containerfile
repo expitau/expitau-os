@@ -7,7 +7,7 @@ RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/
 
 # Perform a clean system installation with latest Arch Linux packages in chroot to correctly execute hooks, this uses host's Pacman
 RUN pacman --noconfirm --sync --needed arch-install-scripts \
-    && pacstrap -K -P /mnt base base-devel linux linux-headers linux-firmware intel-ucode btrfs-progs grub mkinitcpio \
+    && pacstrap -K -P /mnt base base-devel linux linux-headers linux-firmware intel-ucode btrfs-progs grub mkinitcpio ostree \
     && cp -av /etc/pacman.d/ /mnt/etc/
 
 # Reusable base template
@@ -50,7 +50,7 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root
     && echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 # Install software
-RUN pacman --noconfirm --sync podman ostree which git networkmanager gnome
+RUN pacman --noconfirm --sync podman which git networkmanager gnome
 
 # Services
 RUN systemctl enable NetworkManager.service && \
