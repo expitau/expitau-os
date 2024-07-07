@@ -22,6 +22,9 @@ RUN pacman --noconfirm --sync --needed arch-install-scripts \
 FROM scratch AS base
 COPY --from=rootfs /mnt /
 
+# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
+RUN pacman --noconfirm --sync podman ostree which git networkmanager
+
 # Clock
 ARG SYSTEM_OPT_TIMEZONE="Etc/UTC"
 RUN ln --symbolic --force /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
@@ -38,9 +41,6 @@ RUN echo 'LANG=en_US.UTF-8' > /etc/locale.conf \
 # Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d \
     && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block encrypt btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
-
-# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm --sync podman ostree which git networkmanager
 
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
@@ -61,28 +61,12 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root
     && echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 # Networking
-RUN pacman --noconfirm --sync networkmanager \
-    && systemctl enable NetworkManager.service \
-    && systemctl mask systemd-networkd-wait-online.service
+RUN systemctl enable NetworkManager.service && \
+    systemctl mask systemd-networkd-wait-online.service && \
+    systemctl enable gdm.service
 
 # Root password
 RUN echo "root:ostree" | chpasswd
-
-# Add user
-ARG USER="nathan"
-RUN groupadd -g 1000 -o $USER && \
-    useradd -m -u 1000 -g 1000 -o $USER && \
-    echo "$USER:$USER" | chpasswd && \
-    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
-    # usermod -aG docker $USER && \
-    # Create home directory
-    touch /home/$USER && \
-    chown $USER:$USER /home/$USER
-
-RUN echo "My custom ostree stuff" > /myfile
-
-RUN pacman --noconfirm -S gnome && \
-    systemctl enable gdm.service
 
 RUN mv /etc /usr/ && \
     rm -r /home && \
@@ -121,3 +105,12 @@ RUN mv /etc /usr/ && \
     sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
     rm -r /var/*
+
+# Add user
+ARG USER="nathan"
+RUN groupadd -g 1000 -o $USER && \
+    useradd -m -u 1000 -g 1000 -o $USER && \
+    echo "$USER:$USER" | chpasswd && \
+    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
+    touch /var/home/$USER && \
+    chown $USER:$USER /var/home/$USER
