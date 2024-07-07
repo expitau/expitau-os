@@ -108,7 +108,7 @@ ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
     useradd -m -u 1000 -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
-    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /usr/etc/sudoers.d/$USER && \
+    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
     touch /var/home/$USER && \
     chown $USER:$USER /var/home/$USER
 
