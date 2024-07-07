@@ -48,9 +48,9 @@ RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disab
 ARG OSTREE_SYS_BOOT_LABEL="SYS_BOOT"
 ARG OSTREE_SYS_ROOT_LABEL="fedora_fedora"
 ARG OSTREE_SYS_EFI_LABEL="SYS_EFI"
-RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root 0 0" >> /etc/fstab \
-    && echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot ext4 defaults 1 2" >> /etc/fstab \
-    && echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
+RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root 0 0" >> /etc/fstab && \
+    echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot ext4 defaults 1 2" >> /etc/fstab && \
+    echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 # Install software
 RUN pacman --noconfirm --sync podman git networkmanager gnome hyprland
@@ -69,6 +69,12 @@ RUN pacman --noconfirm -S openssh \
     && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
 RUN echo "My custom ostree stuff" > /myfile
+
+ARG USER="nathan"
+RUN groupadd -g 1000 -o $USER && \
+    useradd -m -u 1000 -g 1000 -o $USER && \
+    echo "$USER:$USER" | chpasswd && \
+    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
 RUN  mv /etc /usr/ && \
     rm -r /home && \
