@@ -58,6 +58,36 @@ RUN systemctl enable systemd-timesyncd.service
 
 RUN echo 'My specific container setup' > /myfile
 
+# Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
+RUN mkdir -p /etc/mkinitcpio.conf.d \
+ && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
+
+# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
+RUN pacman --noconfirm --sync \
+    linux \
+    linux-headers \
+    \
+    linux-firmware \
+    amd-ucode \
+    \
+    dosfstools \
+    xfsprogs \
+    \
+    grub \
+    mkinitcpio \
+    \
+    podman \
+    ostree \
+    which
+
+# OSTree: Prepare microcode and initramfs
+RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
+    cat /boot/*-ucode.img /boot/initramfs-linux-fallback.img > ${moduledir}/initramfs.img
+
+# OSTree: Bootloader integration
+RUN cp /usr/lib/libostree/* /etc/grub.d && \
+	chmod +x /etc/grub.d/15_ostree
+
 FROM scratch AS ostreeify
 
 COPY --from=downloader /rootfs/root.x86_64 /
