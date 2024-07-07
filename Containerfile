@@ -53,7 +53,9 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} / btrfs rw,relatime,noatime,subvol=root
     echo "LABEL=${OSTREE_SYS_EFI_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 # Install software
-RUN pacman --noconfirm --sync podman git networkmanager gnome hyprland
+RUN pacman --noconfirm --sync podman git networkmanager gnome nano
+
+# RUN pacman --noconfirm -S hyprland kitty
 
 # Services
 RUN systemctl enable NetworkManager.service && \
