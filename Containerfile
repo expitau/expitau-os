@@ -104,10 +104,11 @@ RUN mv /etc /usr/ && \
     mkdir /var/srv && \
     mkdir /var/usrlocal
 
+RUN echo "CREATE_MAIL_SPOOL no" >> /etc/default/useradd
 # Add user
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
-    useradd -K MAIL_DIR=/dev/null -m -u 1000 -g 1000 -o $USER && \
+    useradd -m -u 1000 -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /usr/etc/sudoers.d/$USER && \
     touch /var/home/$USER && \
