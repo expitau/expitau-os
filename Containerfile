@@ -37,7 +37,7 @@ RUN echo 'LANG=en_US.UTF-8' > /etc/locale.conf \
 
 # Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d \
-    && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
+    && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block encrypt btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
 
 # Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
 RUN pacman --noconfirm --sync \
