@@ -57,6 +57,8 @@ RUN pacman --noconfirm --sync podman git networkmanager gnome nano
 
 # RUN pacman --noconfirm -S hyprland kitty
 
+RUN pacman --noconfirm -S spice-vdagent xf86-video-qxl
+
 # Services
 RUN systemctl enable NetworkManager.service && \
     systemctl mask systemd-networkd-wait-online.service && \
