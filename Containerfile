@@ -11,7 +11,7 @@ RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/
 
 # Perform a clean system installation with latest Arch Linux packages in chroot to correctly execute hooks, this uses host's Pacman
 RUN pacman --noconfirm --sync --needed arch-install-scripts \
-    && pacstrap -K -P /mnt base \
+    && pacstrap -K -P /mnt base base-devel linux linux-headers linux-firmware intel-ucode btrfs-progs grub mkinitcpio \
     && cp -av /etc/pacman.d/ /mnt/etc/
 
 # |
@@ -40,39 +40,17 @@ RUN mkdir -p /etc/mkinitcpio.conf.d \
     && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block encrypt btrfs filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
 
 # Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
-RUN pacman --noconfirm --sync \
-    linux \
-    linux-headers \
-    \
-    linux-firmware \
-    intel-ucode \
-    \
-    dosfstools \
-    btrfs-progs \
-    \
-    grub \
-    mkinitcpio \
-    \
-    podman \
-    ostree \
-    which
+RUN pacman --noconfirm --sync podman ostree which git networkmanager
 
 # OSTree: Prepare microcode and initramfs
-RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) \
-    && cat /boot/*-ucode.img \
-    /boot/initramfs-linux-fallback.img \
-    > ${moduledir}/initramfs.img
+RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
+    cat /boot/*-ucode.img /boot/initramfs-linux-fallback.img > ${moduledir}/initramfs.img
 
 # OSTree: Bootloader integration
-RUN cp /usr/lib/libostree/* /etc/grub.d \
-    && chmod +x /etc/grub.d/15_ostree
+RUN cp /usr/lib/libostree/* /etc/grub.d && chmod +x /etc/grub.d/15_ostree
 
 # Podman: native Overlay Diff for optimal Podman performance
 RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
-
-## |
-## | CUSTOMIZE
-## |
 
 # Mount disk locations
 ARG OSTREE_SYS_BOOT_LABEL="SYS_BOOT"
@@ -90,14 +68,23 @@ RUN pacman --noconfirm --sync networkmanager \
 # Root password
 RUN echo "root:ostree" | chpasswd
 
-# SSHD
-RUN pacman --noconfirm -S openssh \
-    && systemctl enable sshd \
-    && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+# Add user
+ARG USER="nathan"
+RUN groupadd -g $GID -o $USER && \
+    useradd -m -u $UID -g $GID -o $USER && \
+    echo "$USER:$USER" | chpasswd && \
+    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
+    # usermod -aG docker $USER && \
+    # Create home directory
+    touch /home/$USER && \
+    chown $USER:$USER /home/$USER
 
 RUN echo "My custom ostree stuff" > /myfile
 
-RUN  mv /etc /usr/ && \
+RUN pacman --noconfirm -S gnome && \
+    systemctl enable gdm.service
+
+RUN mv /etc /usr/ && \
     rm -r /home && \
     ln -s var/home /home && \
     rm -r /mnt && \
