@@ -106,12 +106,12 @@ RUN mv /mnt/etc /mnt/usr/ && \
     echo 'd /var/usrlocal/src 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo 'd /run/media 0755 root root -' >> /mnt/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     mv /mnt/var/lib/pacman /mnt/usr/lib/ && \
-    sed -i \ && \
-        -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' \ && \
-        -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' \ && \
+    sed -i \
+        -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' \
+        -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' \
         /mnt/usr/etc/pacman.conf && \
     mkdir /mnt/usr/lib/pacmanlocal && \
-    rm -r /mnt/var/* && \
+    rm -r /mnt/var/*
 
 FROM scratch as export
 
