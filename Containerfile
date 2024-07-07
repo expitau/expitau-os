@@ -84,8 +84,8 @@ RUN mv "/mnt/home" "/mnt/var/" && \
 	mkdir "/mnt/sysroot" && \
 	ln -s sysroot/ostree "/mnt/ostree" && \
 	mv "/mnt/etc" "/mnt/usr/"
-	# rm -r "/mnt/boot" && \
-	# mkdir "/mnt/boot"
+	rm -r "/mnt/boot" && \
+	mkdir "/mnt/boot"
 
 FROM scratch as export
 
