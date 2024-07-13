@@ -63,8 +63,9 @@ RUN pacman --noconfirm -S fastfetch
 
 # Services
 RUN systemctl enable NetworkManager.service && \
-    systemctl mask systemd-networkd-wait-online.service && \
-    systemctl enable gdm.service
+    systemctl mask systemd-networkd-wait-online.service 
+    # && \
+    # systemctl enable gdm.service
 
 # Root password
 RUN echo "root:ostree" | chpasswd
