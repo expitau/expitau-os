@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/varsetup.sh
+ExecStart=/usr/share/homesetup.sh
 RemainAfterExit=true
 
 [Install]

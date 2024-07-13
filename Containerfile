@@ -71,7 +71,7 @@ RUN systemctl enable NetworkManager.service && \
 RUN echo "root:ostree" | chpasswd
 
 RUN echo "My custom ostree stuff" > /myfile
-RUN echo "My custom var stuff" > /var/myfile
+RUN echo "My custom var stuff" > /var/home/myfile
 
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
@@ -79,11 +79,12 @@ RUN groupadd -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
-COPY ./lib/varsetup.sh /usr/local/bin/varsetup.sh
-COPY ./lib/varsetup.service /etc/systemd/system/varsetup.service
-RUN systemctl enable varsetup.service
+COPY ./lib/varsetup.sh /usr/share/varsetup.sh
+COPY ./lib/varsetup.service /etc/systemd/system/homesetup.service
+RUN systemctl enable homesetup.service
 
 RUN  mv /etc /usr/ && \
+    mv /var/home/* /usr/homesetup && \
     rm -r /home && \
     ln -s var/home /home && \
     rm -r /mnt && \
@@ -102,4 +103,4 @@ RUN  mv /etc /usr/ && \
     sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
     mkdir /usr/varsetup && \
-    mv /var/* /usr/varsetup
+    rm -r var/*
