@@ -70,18 +70,18 @@ RUN systemctl enable NetworkManager.service && \
 # Root password
 RUN echo "root:ostree" | chpasswd
 
-# SSHD
-RUN pacman --noconfirm -S openssh \
-    && systemctl enable sshd \
-    && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-
 RUN echo "My custom ostree stuff" > /myfile
+RUN echo "My custom var stuff" > /var/myfile
 
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
     useradd -m -u 1000 -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
+
+COPY ./lib/varsetup.sh /usr/local/bin/varsetup.sh
+COPY ./lib/varsetup.service /etc/systemd/system/varsetup.service
+RUN systemctl enable varsetup.service
 
 RUN  mv /etc /usr/ && \
     rm -r /home && \
@@ -98,25 +98,8 @@ RUN  mv /etc /usr/ && \
     ln -s sysroot/ostree /ostree && \
     rm -r /usr/local && \
     ln -s ../var/usrlocal /usr/local && \
-    echo 'd /var/home 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/lib 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/log/journal 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/mnt 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/opt 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/roothome 0700 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/srv 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/bin 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/etc 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/games 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/include 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/lib 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/man 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/sbin 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/share 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /var/usrlocal/src 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo 'd /run/media 0755 root root -' >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     mv /var/lib/pacman /usr/lib/ && \
     sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
-    rm -r /var/*
+    mkdir /usr/varsetup && \
+    mv /var/* /usr/varsetup
