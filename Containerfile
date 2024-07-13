@@ -71,7 +71,7 @@ RUN systemctl enable NetworkManager.service && \
 RUN echo "root:ostree" | chpasswd
 
 RUN echo "My custom ostree stuff" > /myfile
-RUN echo "My custom var stuff" > /var/home/myfile
+RUN mkdir -p /var/home && echo "My custom var stuff" > /var/home/myfile
 
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
