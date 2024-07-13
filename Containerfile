@@ -79,8 +79,8 @@ RUN groupadd -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
-COPY ./lib/varsetup.sh /usr/share/varsetup.sh
-COPY ./lib/varsetup.service /etc/systemd/system/homesetup.service
+COPY ./lib/homesetup.sh /usr/share/varsetup.sh
+COPY ./lib/homesetup.service /etc/systemd/system/homesetup.service
 RUN systemctl enable homesetup.service
 
 RUN  mv /etc /usr/ && \
