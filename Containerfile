@@ -16,6 +16,8 @@ RUN pacman --noconfirm --sync --needed arch-install-scripts \
 FROM scratch AS base
 COPY --from=rootfs /mnt /
 
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
 # Clock
 ARG SYSTEM_OPT_TIMEZONE="Etc/UTC"
 RUN ln --symbolic --force /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
