@@ -71,7 +71,8 @@ RUN systemctl enable NetworkManager.service && \
 RUN echo "root:ostree" | chpasswd
 
 RUN echo "My custom ostree stuff" > /myfile
-RUN mkdir -p /var/home && echo "My custom var stuff" > /var/home/myfile
+RUN echo "My custom home stuff" > /home/myfile
+COPY ./lib/.bashrc /home/.bashrc
 
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
@@ -85,7 +86,7 @@ RUN systemctl enable homesetup.service
 
 RUN  mv /etc /usr/ && \
     mkdir -p /usr/homesetup && \
-    mv /var/home/* /usr/homesetup && \
+    mv /home/* /usr/homesetup && \
     rm -r /home && \
     ln -s var/home /home && \
     rm -r /mnt && \
