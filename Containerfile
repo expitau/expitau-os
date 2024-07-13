@@ -84,6 +84,8 @@ COPY ./lib/homesetup.sh /usr/share/homesetup.sh
 COPY ./lib/homesetup.service /etc/systemd/system/homesetup.service
 RUN systemctl enable homesetup.service
 
+COPY ./lib/ostree-0-integration.conf /usr/lib/tmpfiles.d/ostree-0-integration.conf
+
 RUN  mv /etc /usr/ && \
     mkdir -p /usr/homesetup && \
     mv /home/* /usr/homesetup && \
