@@ -72,13 +72,14 @@ RUN echo "root:ostree" | chpasswd
 
 RUN echo "My custom ostree stuff" > /myfile
 RUN echo "My custom home stuff" > /home/myfile
-COPY ./lib/.bashrc /home/.bashrc
 
 ARG USER="nathan"
 RUN groupadd -g 1000 -o $USER && \
-    useradd -m -u 1000 -g 1000 -o $USER && \
-    echo "$USER:$USER" | chpasswd && \
-    echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
+useradd -m -u 1000 -g 1000 -o $USER && \
+echo "$USER:$USER" | chpasswd && \
+echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
+
+COPY ./lib/.bashrc /home/nathan/.bashrc
 
 COPY ./lib/homesetup.sh /usr/share/homesetup.sh
 COPY ./lib/homesetup.service /etc/systemd/system/homesetup.service
