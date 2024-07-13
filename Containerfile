@@ -79,7 +79,7 @@ RUN groupadd -g 1000 -o $USER && \
     echo "$USER:$USER" | chpasswd && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
-COPY ./lib/homesetup.sh /usr/share/varsetup.sh
+COPY ./lib/homesetup.sh /usr/share/homesetup.sh
 COPY ./lib/homesetup.service /etc/systemd/system/homesetup.service
 RUN systemctl enable homesetup.service
 
@@ -103,5 +103,4 @@ RUN  mv /etc /usr/ && \
     mv /var/lib/pacman /usr/lib/ && \
     sed -i -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' /usr/etc/pacman.conf && \
     mkdir /usr/lib/pacmanlocal && \
-    mkdir /usr/varsetup && \
     rm -r var/*
