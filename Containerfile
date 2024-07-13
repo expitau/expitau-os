@@ -84,6 +84,7 @@ COPY ./lib/homesetup.service /etc/systemd/system/homesetup.service
 RUN systemctl enable homesetup.service
 
 RUN  mv /etc /usr/ && \
+    mkdir -p /usr/homesetup && \
     mv /var/home/* /usr/homesetup && \
     rm -r /home && \
     ln -s var/home /home && \
