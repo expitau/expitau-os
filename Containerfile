@@ -1,6 +1,8 @@
 # Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
 FROM docker.io/archlinux/archlinux:latest AS rootfs
 
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
 # Build in chroot to correctly execute hooks, this uses host's Pacman
 RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/pacman/trunk/pacman.conf -o /etc/pacman.conf \
     && pacman --noconfirm --sync --needed --refresh archlinux-keyring
