@@ -80,6 +80,7 @@ echo "$USER:$USER" | chpasswd && \
 echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
 COPY ./lib/.bashrc /home/nathan/.bashrc
+RUN chown nathan:nathan /home/nathan/.bashrc
 
 COPY ./lib/homesetup.sh /usr/share/homesetup.sh
 COPY ./lib/homesetup.service /etc/systemd/system/homesetup.service
