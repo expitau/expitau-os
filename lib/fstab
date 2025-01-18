@@ -1,7 +1,0 @@
-# Static information about the filesystems.
-# See fstab(5) for details.
-
-# <file system> <dir> <type> <options> <dump> <pass>
-LABEL=fedora_fedora / btrfs rw,relatime,noatime,subvol=root 0 0
-LABEL=SYS_BOOT /boot ext4 defaults 1 2
-LABEL=SYS_EFI /boot/efi vfat umask=0077,shortname=winnt 0 2
