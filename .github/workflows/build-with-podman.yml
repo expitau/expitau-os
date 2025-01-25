@@ -1,0 +1,41 @@
+name: Build Docker Image with Podman
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests targeting the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Podman
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      # Build the Docker image using Podman
+      - name: Build Docker image
+        run: |
+          podman build -t archbuild:latest .
+      
+      - name: Build artifact
+        run: |
+          podman run --privileged --name archbuild archbuild
+          podman cp archbuild:/arch.sqfs .
+
+          podman rm archbuild
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arch.sqfs
