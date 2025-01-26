@@ -10,8 +10,9 @@ sed -i 's/^\(HOOKS=.*fsck\))/\1 overlay_root)/' /mnt/etc/mkinitcpio.conf
 arch-chroot -N /mnt /bin/bash <<'EOF'
 mkinitcpio -P
 systemctl enable NetworkManager
-
-# pacman -S --noconfirm gnome
+systemctl enable systemd-timesyncd
+echo "root:test2" | chpasswd
+pacman -S --noconfirm gnome
 # systemctl enable gdm
 EOF
 
