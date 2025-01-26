@@ -9,6 +9,7 @@ sed -i 's/^\(HOOKS=.*fsck\))/\1 overlay_root)/' /mnt/etc/mkinitcpio.conf
 
 arch-chroot -N /mnt /bin/bash <<'EOF'
 mkinitcpio -P
+pacman-key --populate archlinux
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
 pacman -S --noconfirm podman fuse-overlayfs
