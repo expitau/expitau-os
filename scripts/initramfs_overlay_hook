@@ -5,11 +5,11 @@ mount_handler_overlay_rootfs() {
     echo $*
 
     mount /dev/vda2 /sysroot --mkdir
-    mount /sysroot/images/arch.sqfs /mnt/deploy
+    mount /sysroot/images/arch.sqfs /sysroot/deploy
     mount -t overlay overlay -o lowerdir=/sysroot/deploy,upperdir=/sysroot/state/upper,workdir=/sysroot/state/work /new_root
 
     mount --rbind --mkdir /sysroot /new_root/sysroot
-    mount --rbind --mkdir /sysroot/state/containers /new_root/var/lib/containers
+    # mount --rbind --mkdir /sysroot/state/containers /new_root/var/lib/containers
 
     launch_interactive_shell
 }
