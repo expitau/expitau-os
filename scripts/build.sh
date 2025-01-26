@@ -11,6 +11,7 @@ arch-chroot -N /mnt /bin/bash <<'EOF'
 mkinitcpio -P
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
+pacman -S --noconfirm podman fuse-overlayfs
 echo "root:test2" | chpasswd
 pacman -S --noconfirm gnome
 # systemctl enable gdm
