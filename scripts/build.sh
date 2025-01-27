@@ -1,21 +1,15 @@
 #!/bin/bash
+set -e
 
-echo "root:0:1000" >> /etc/subuid
-echo "root:0:1000" >> /etc/subgid
-pacstrap -KNP /mnt base base-devel linux linux-firmware grub efibootmgr nano git networkmanager
+pacstrap -cKNP /mnt base base-devel linux linux-firmware grub efibootmgr nano git networkmanager
 cp /scripts/initramfs_overlay_hook /mnt/etc/initcpio/hooks/overlay_root
 cp /scripts/initramfs_overlay_install /mnt/etc/initcpio/install/overlay_root
 sed -i 's/^\(HOOKS=.*fsck\))/\1 overlay_root)/' /mnt/etc/mkinitcpio.conf
+cp /scripts/profile.sh /mnt
 
-arch-chroot -N /mnt /bin/bash <<'EOF'
-mkinitcpio -P
-pacman-key --populate archlinux
-systemctl enable NetworkManager
-systemctl enable systemd-timesyncd
-pacman -S --noconfirm podman fuse-overlayfs
-echo "root:test2" | chpasswd
-pacman -S --noconfirm gnome
-# systemctl enable gdm
-EOF
+mkdir -p /mnt/var/cache/pacman
+ln -s /var/cache/pacman/pkg /mnt/var/cache/pacman/pkg
+
+arch-chroot -N /mnt /bin/bash /profile.sh
 
 mksquashfs /mnt /arch.sqfs
