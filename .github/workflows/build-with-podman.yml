@@ -1,12 +1,6 @@
 name: Build Docker Image with Podman
 
-on:
-  push:
-    branches:
-      - main  # Trigger on push to the main branch
-  pull_request:
-    branches:
-      - main  # Trigger on pull requests targeting the main branch
+on: workflow_dispatch
 
 jobs:
   build:
@@ -34,9 +28,9 @@ jobs:
           podman cp archbuild:/arch.sqfs .
 
           podman rm archbuild
+          split --bytes=1G -d arch.sqfs dist/chunk-
       
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create release
+        uses: softprops/action-gh-release@v2
         with:
-          path: arch.sqfs
-          name: arch.sqfs
+          files: dist/*
