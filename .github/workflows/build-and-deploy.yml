@@ -29,7 +29,7 @@ jobs:
           # podman cp archbuild:/arch.sqfs .
 
           # podman rm archbuild
-          dd if=/dev/zero of=arch.sqfs bs=2G
+          dd if=/dev/zero of=arch.sqfs bs=1M count=2048
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
       
