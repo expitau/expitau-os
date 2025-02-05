@@ -1,4 +1,4 @@
-name: Build Docker Image with Podman
+name: Build and Release Arch Image
 
 on: workflow_dispatch
 
@@ -28,6 +28,7 @@ jobs:
           podman cp archbuild:/arch.sqfs .
 
           podman rm archbuild
+          mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
       
       - name: Create release
