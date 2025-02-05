@@ -25,11 +25,10 @@ jobs:
       
       - name: Build artifact
         run: |
-          # podman run --privileged --name archbuild archbuild
-          # podman cp archbuild:/arch.sqfs .
+          podman run --privileged --name archbuild archbuild
+          podman cp archbuild:/arch.sqfs .
 
-          # podman rm archbuild
-          dd if=/dev/zero of=arch.sqfs bs=1M count=2048
+          podman rm archbuild
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
       
