@@ -1,7 +1,8 @@
 name: Build and Release Arch Image
 
 on: workflow_dispatch
-
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,10 +25,11 @@ jobs:
       
       - name: Build artifact
         run: |
-          podman run --privileged --name archbuild archbuild
-          podman cp archbuild:/arch.sqfs .
+          # podman run --privileged --name archbuild archbuild
+          # podman cp archbuild:/arch.sqfs .
 
-          podman rm archbuild
+          # podman rm archbuild
+          dd if=/dev/zero of=arch.sqfs bs=2G
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
       
