@@ -2,9 +2,11 @@
 set -e
 
 pacstrap -cKNP /mnt base base-devel linux linux-firmware grub efibootmgr nano git networkmanager wget
+
 cp /scripts/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
 cp /scripts/profile.sh /mnt
 cp /scripts/system /mnt/usr/local/sbin/system
+mkdir -p /mnt/usr/share/background/gnome
 cp /scripts/Wallpaper.png /mnt/usr/share/backgrounds/gnome/chichien.png
 
 mkdir -p /mnt/var/cache/pacman
