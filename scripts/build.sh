@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
 
-pacstrap -cKNP /mnt base base-devel linux linux-firmware grub efibootmgr nano git networkmanager
+pacstrap -cKNP /mnt base base-devel linux linux-firmware grub efibootmgr nano git networkmanager wget
 cp /scripts/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
 cp /scripts/profile.sh /mnt
+cp /scripts/system /mnt/usr/local/sbin/system
 
 mkdir -p /mnt/var/cache/pacman
 mount --bind /var/cache/pacman/pkg /mnt/var/cache/pacman/pkg

@@ -55,3 +55,15 @@ favorite-apps=['firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.TextE
 EOF
 
 dconf update
+
+mkdir -p /root/extensions
+cd extensions
+wget -c https://extensions.gnome.org/extension-data/blur-my-shellaunetx.v67.shell-extension.zip
+wget -c https://extensions.gnome.org/extension-data/color-pickertuberry.v45.shell-extension.zip
+wget -c https://extensions.gnome.org/extension-data/caffeinepatapon.info.v55.shell-extension.zip
+gnome-extensions install blur-my-shellaunetx.v67.shell-extension.zip
+gnome-extensions install color-pickertuberry.v45.shell-extension.zip
+gnome-extensions install caffeinepatapon.info.v55.shell-extension.zip
+
+mv /root/.local/share/gnome-shell/extensions/* /usr/share/gnome-shell/extensions
+rm -r /root/extensions
