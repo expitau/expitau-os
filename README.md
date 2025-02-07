@@ -19,11 +19,10 @@
     - `btrfs subvolume create /mnt/@`
     - `btrfs subvolume create /mnt/@data`
     - `umount /mnt`
-10. Get a copy of arch.sqfs
+10. Get a copy of arch.sqfs `cd tmp && curl https://raw.githubusercontent.com/expitau/System/refs/heads/main/create_image.sh | sh`
 11. Unpack the squashfs to new root subvolume
     - `mount /dev/vda2 -o subvol=@ /mnt`
     - `unsquashfs -d /mnt /tmp/arch.sqfs`
 12. Mount efi partition and install bootloader
     - `mount /dev/vda1 /mnt/efi`
     - `bootctl install --efi-path=/mnt/efi`
-    
