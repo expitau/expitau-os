@@ -17,6 +17,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y podman
+      
+      - name: Build Rust project
+        run: |
+          cd system && cargo build --release && cd -
 
       # Build the Docker image using Podman
       - name: Build Docker image

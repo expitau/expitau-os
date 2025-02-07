@@ -11,7 +11,7 @@ pacman -S --noconfirm podman fuse-overlayfs
 
 # Set up users
 useradd -m -G wheel -s /bin/bash nathan
-sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 echo "nathan:test" | chpasswd
 pacman -S --noconfirm \
@@ -20,3 +20,38 @@ pacman -S --noconfirm \
 systemctl enable gdm
 
 # Gnome extensions
+mkdir -p /etc/dconf/profile
+mkdir -p /etc/dconf/db/local.d
+
+cat <<EOF > /etc/dconf/profile/user
+user-db:user
+system-db:local
+EOF
+
+cat <<EOF > /etc/dconf/db/local.d/00-profile
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/gnome/night.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/night.jpg'
+
+[org/gnome/desktop/screensaver]
+picture-uri='file:///usr/share/backgrounds/gnome/night.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/night.jpg'
+
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+clock-format='24h'
+
+[org/gnome/shell/extensions/color-picker]
+color-picker-shortcut=['<Shift><Super>c']
+enable-preview=true
+enable-shortcut=true
+enable-sound=false
+enable-systray=false
+format-menu=false
+
+[org/gnome/shell]
+enabled-extensions=['blur-my-shell@aunetx', 'color-picker@tuberry', 'caffeine@patapon.info']
+favorite-apps=['firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.TextEditor.desktop', 'code.desktop', 'org.gnome.Console.desktop', 'discord.desktop']
+EOF
+
+dconf update

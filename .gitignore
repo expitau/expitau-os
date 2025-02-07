@@ -2,3 +2,4 @@ cache/*
 !cache/.gitkeep
 arch.sqfs
 configuration.nix
+system/target/*
