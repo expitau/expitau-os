@@ -15,6 +15,7 @@ sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 echo "nathan:test" | chpasswd
 pacman -S --noconfirm \
+    btrfs-progs squashfs-tools cargo rust \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-docs gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
     code discord
 systemctl enable gdm
@@ -65,5 +66,7 @@ gnome-extensions install blur-my-shellaunetx.v67.shell-extension.zip
 gnome-extensions install color-pickertuberry.v45.shell-extension.zip
 gnome-extensions install caffeinepatapon.info.v55.shell-extension.zip
 
+chmod -R 755 /root/.local/share/gnome-shell/extensions/*
+chown -R root:root /root/.local/share/gnome-shell/extensions/*
 mv /root/.local/share/gnome-shell/extensions/* /usr/share/gnome-shell/extensions
 rm -r /root/extensions
