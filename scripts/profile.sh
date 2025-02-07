@@ -31,12 +31,12 @@ EOF
 
 cat <<EOF > /etc/dconf/db/local.d/00-profile
 [org/gnome/desktop/background]
-picture-uri='file:///usr/share/backgrounds/gnome/night.jpg'
-picture-uri-dark='file:///usr/share/backgrounds/gnome/night.jpg'
+picture-uri='file:///usr/share/backgrounds/gnome/chichien.png'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/chichien.png'
 
 [org/gnome/desktop/screensaver]
-picture-uri='file:///usr/share/backgrounds/gnome/night.jpg'
-picture-uri-dark='file:///usr/share/backgrounds/gnome/night.jpg'
+picture-uri='file:///usr/share/backgrounds/gnome/chichien.png'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/chichien.png'
 
 [org/gnome/desktop/interface]
 color-scheme='prefer-dark'
