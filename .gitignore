@@ -3,3 +3,4 @@ cache/*
 arch.sqfs
 configuration.nix
 system/target/*
+dconf.conf
