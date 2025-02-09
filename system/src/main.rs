@@ -325,14 +325,13 @@ fn get_confirmation(prompt: &str, default: bool) -> bool {
 fn run_command(command: &str, args: &[&str]) -> Result<String, String> {
     let output = Command::new(command)
         .args(args)
-        .stdout(std::process::Stdio::null())
         .output()
         .map_err(|e| format!("Failed to execute {}: {}", command, e))?;
 
     if !output.status.success() {
         return Err(format!("Command exited with error: {}", output.status));
     }
-
+    
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
