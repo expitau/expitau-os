@@ -1,10 +1,10 @@
 use chrono;
 use clap::{Parser, Subcommand};
+use std::io;
+use std::io::Write;
 use std::os::linux::raw::stat;
 use std::path::Path;
 use std::process::{self, Command};
-use std::io;
-use std::io::Write;
 
 #[derive(Parser)]
 #[command(name = "system")]
@@ -27,37 +27,32 @@ enum Commands {
     /// Create system snapshot
     Snapshot {
         /// Btrfs subvolume directory
-        /// Default: /mnt
-        #[clap(short, long, default_value = "/mnt")]
+        #[clap(long, default_value = "/mnt")]
         subvolume_dir: String,
     },
     /// Rollback to previous state
     Rollback {
         /// Btrfs subvolume directory
-        /// Default: /mnt
-        #[clap(short, long, default_value = "/mnt")]
+        #[clap(long, default_value = "/mnt")]
         subvolume_dir: String,
         /// Snapshot to rollback to, will use latest if multiple snapshots exist
         snapshot_name: String,
+    },
+    /// List snapshots
+    ListSnapshots {
+        /// Btrfs subvolume directory
+        #[clap(long, default_value = "/mnt")]
+        subvolume_dir: String,
     },
     /// Reset system configuration
     Reset,
 }
 
-fn main() {
-    let cli = Cli::parse();
-
-    match &cli.command {
-        Commands::Build => handle_build(),
-        Commands::Update { file } => handle_update(file),
-        Commands::Snapshot { subvolume_dir } => handle_snapshot(subvolume_dir.to_string()),
-        Commands::Rollback {
-            subvolume_dir,
-            snapshot_name,
-        } => handle_rollback(subvolume_dir.to_string(), snapshot_name.to_string()),
-        Commands::Reset => handle_reset(),
-    }
+struct SnapshotInfo {
+    name: String,
+    number: u32,
 }
+
 
 fn handle_build() {
     println!("Running build process...");
@@ -78,63 +73,15 @@ fn handle_snapshot(subvolume_dir: String) {
         process::exit(1);
     });
 
-    let current_date = chrono::Local::now().format("%Y%m%d");
-    let snapshots = list_snapshots(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+    let current_date = chrono::Local::now().format("%Y_%m_%d");
+    create_snapshot(
+        Path::new(subvolume_dir.as_str()),
+        format!("@snapshot-{}", current_date),
+    )
+    .unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
-
-    let mut latest_snapshot_num: Option<u32> = None;
-    for snapshot in snapshots {
-        // If snapshot name starts with @snapshot-<date>, parse the number
-        if !snapshot.name.starts_with("@snapshot-") {
-            continue;
-        }
-
-        if !snapshot.date.contains(&current_date.to_string()) {
-            continue;
-        }
-
-        if let Some(num) = latest_snapshot_num {
-            if snapshot.number > num {
-                latest_snapshot_num = Some(snapshot.number);
-            }
-        } else {
-            latest_snapshot_num = Some(snapshot.number);
-        }
-    }
-
-    let snapshot_num = match latest_snapshot_num {
-        Some(num) => num + 1,
-        None => 1,
-    };
-    let snapshot_name = format!("@snapshot-{}-{}", current_date, snapshot_num);
-
-    println!("Creating snapshot {}...", snapshot_name);
-    Command::new("btrfs")
-        .args(&[
-            "subvolume",
-            "snapshot",
-            "/",
-            Path::new(subvolume_dir.as_str())
-                .join(Path::new(snapshot_name.as_str()))
-                .to_str()
-                .unwrap_or_else(|| {
-                    eprintln!("Failed to convert snapshot path to str");
-                    process::exit(1);
-                }),
-        ])
-        .status()
-        .unwrap_or_else(|e| {
-            eprintln!("Failed to execute btrfs: {}", e);
-            process::exit(1);
-        });
-}
-
-struct SnapshotInfo {
-    name: String,
-    date: String,
-    number: u32,
 }
 
 fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
@@ -154,7 +101,7 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         if snapshot.name.starts_with(&snapshot_name)
             || snapshot.name.starts_with(&format!("@{}", snapshot_name))
             || snapshot
-                .date
+                .name
                 .starts_with(&format!("@snapshot-{}", snapshot_name))
         {
             // Choose whichever snapshot has the highest number (latest)
@@ -171,54 +118,91 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         }
     }
 
-    let snapshot_name_full = snapshot_to_use.unwrap_or_else(|| {
-        eprintln!("Snapshot {} not found", snapshot_name);
-        process::exit(1);
-    }).name;
+    let snapshot_name_full = snapshot_to_use
+        .unwrap_or_else(|| {
+            eprintln!("Snapshot {} not found", snapshot_name);
+            process::exit(1);
+        })
+        .name;
 
     // Ask for confirmation
-    if !get_confirmation(&format!(
-        "Rollback to snapshot '{}'? [y/N]: ",
-        snapshot_name_full
-    )) {
+    if !get_confirmation(
+        &format!("Rollback to snapshot '{}'?", snapshot_name_full),
+        false,
+    ) {
         println!("Rollback cancelled");
         process::exit(0);
     }
 
     println!("Rolling back to snapshot...");
-    let root = Path::new(subvolume_dir.as_str()).join("@");
-    let root_bak = Path::new(subvolume_dir.as_str()).join("@_old");
-    let new_root = Path::new(subvolume_dir.as_str()).join(&snapshot_name_full);
-    
-    Command::new("mv")
-        .args(&[root.as_os_str(), root_bak.as_os_str()])
-        .status()
-        .unwrap_or_else(|e| {
-            eprintln!("Failed to execute mv: {}", e);
-            process::exit(1);
-        });
-    
+    let root_path = Path::new(subvolume_dir.as_str()).join("@");
+    let new_root_path = Path::new(subvolume_dir.as_str()).join("@new_root");
 
-    Command::new("mv")
-        .args(&[new_root.as_os_str(), root.as_os_str()])
-        .status()
+    let current_date = chrono::Local::now().format("%Y_%m_%d");
+    create_snapshot(Path::new(subvolume_dir.as_str()), format!("@snapshot-rollback-{}", current_date))
         .unwrap_or_else(|e| {
-            eprintln!("Failed to execute mv: {}", e);
+            eprintln!("{}", e);
             process::exit(1);
         });
 
-    println!("Rollback successful! Reboot now? [Y/n]: ");
-    if !get_confirmation("") {
+    Command::new("btrfs")
+        .args(&[
+            "subvolume",
+            "delete",
+            root_path.to_str().unwrap_or_else(|| {
+                eprintln!("Failed to convert root path to str");
+                process::exit(1);
+            }),
+        ])
+        .output()
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to execute btrfs: {}", e);
+            process::exit(1);
+        });
+    Command::new("btrfs")
+        .args(&[
+            "subvolume",
+            "snapshot",
+            new_root_path.to_str().unwrap_or_else(|| {
+                eprintln!("Failed to convert new root path to str");
+                process::exit(1);
+            }),
+            root_path.to_str().unwrap_or_else(|| {
+                eprintln!("Failed to convert root path to str");
+                process::exit(1);
+            }),
+        ])
+        .output()
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to execute btrfs: {}", e);
+            process::exit(1);
+        });
+
+    if !get_confirmation("Rollback successful! Reboot now?", true) {
         println!("Reboot cancelled");
         process::exit(0);
     }
 
-    Command::new("reboot")
-        .status()
-        .unwrap_or_else(|e| {
-            eprintln!("Failed to execute reboot: {}", e);
-            process::exit(1);
-        });
+    Command::new("reboot").status().unwrap_or_else(|e| {
+        eprintln!("Failed to execute reboot: {}", e);
+        process::exit(1);
+    });
+}
+
+fn handle_list_snapshots(subvolume_dir: String) {
+    check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    let snapshots = list_snapshots(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    for snapshot in snapshots {
+        println!("{}", snapshot.name);
+    }
 }
 
 fn handle_reset() {
@@ -281,7 +265,6 @@ fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
                     (Some(d), Some(n)) => match n.parse() {
                         Ok(num) => Some(SnapshotInfo {
                             name: s.clone(),
-                            date: d.to_string(),
                             number: num,
                         }),
                         _ => None,
@@ -297,15 +280,68 @@ fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
     return Ok(snapshots);
 }
 
-fn get_confirmation(prompt: &str) -> bool {
-    print!("{}", prompt);
+fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<(), String> {
+    let snapshots = list_snapshots(subvolume_dir)?;
+
+    let mut latest_snapshot_num: Option<u32> = None;
+    for snapshot in snapshots {
+        // If snapshot name starts with @snapshot-<date>, parse the number
+        if !snapshot.name.starts_with(&snapshot_name) {
+            continue;
+        }
+
+        if let Some(num) = latest_snapshot_num {
+            if snapshot.number > num {
+                latest_snapshot_num = Some(snapshot.number);
+            }
+        } else {
+            latest_snapshot_num = Some(snapshot.number);
+        }
+    }
+
+    let snapshot_num = match latest_snapshot_num {
+        Some(num) => num + 1,
+        None => 1,
+    };
+
+    println!("Creating snapshot {}-{}...", snapshot_name, snapshot_num);
+    Command::new("btrfs")
+        .args(&[
+            "subvolume",
+            "snapshot",
+            "/",
+            subvolume_dir
+                .join(Path::new(snapshot_name.as_str()))
+                .to_str()
+                .unwrap_or_else(|| {
+                    eprintln!("Failed to convert snapshot path to str");
+                    process::exit(1);
+                }),
+        ])
+        .output()
+        .map_err(|e| format!("Failed to execute btrfs: {}", e))?;
+
+    Ok(())
+}
+
+fn get_confirmation(prompt: &str, default: bool) -> bool {
+    if default {
+        print!("{} [Y/n]: ", prompt);
+    } else {
+        print!("{} [y/N]: ", prompt);
+    }
+
     io::stdout().flush().unwrap(); // Ensure the prompt is displayed immediately
 
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
     let input = input.trim().to_lowercase();
 
-    matches!(input.as_str(), "y" | "yes") // Accepts 'y' or 'yes' as confirmation
+    if default {
+        return matches!(input.as_str(), "n" | "no"); // Accepts 'n' or 'no' as rejection, default yes
+    } else {
+        return matches!(input.as_str(), "y" | "yes"); // Accepts 'y' or 'yes' as confirmation, default no
+    }
 }
 
 fn run_command(command: &str, args: &[&str]) {
@@ -317,5 +353,23 @@ fn run_command(command: &str, args: &[&str]) {
     if !status.success() {
         eprintln!("Command exited with error: {}", status);
         process::exit(1);
+    }
+}
+
+fn main() {
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::Build => handle_build(),
+        Commands::Update { file } => handle_update(file),
+        Commands::Snapshot { subvolume_dir } => handle_snapshot(subvolume_dir.to_string()),
+        Commands::Rollback {
+            subvolume_dir,
+            snapshot_name,
+        } => handle_rollback(subvolume_dir.to_string(), snapshot_name.to_string()),
+        Commands::ListSnapshots { subvolume_dir } => {
+            handle_list_snapshots(subvolume_dir.to_string())
+        }
+        Commands::Reset => handle_reset(),
     }
 }
