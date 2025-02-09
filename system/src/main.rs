@@ -169,10 +169,31 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     let lines: Vec<&str> = findmnt_output.split('\n').collect();
     let root_mounted_as_tmp = lines.iter().any(|line| line.contains("/@_tmp"));
 
-    // If root is mounted as @, move it to @_tmp
-    if !root_mounted_as_tmp {
+    // If root is mounted as /mnt/@_tmp, delete /mnt/@
+    if root_mounted_as_tmp && root_path.exists() {
+        println!("Root is mounted as @_tmp, deleting /mnt/@");
+        // If root is already mounted as @_tmp, delete /mnt/@
+        run_command(
+            "btrfs",
+            &[
+                "subvolume",
+                "delete",
+                root_path.to_str().unwrap_or_else(|| {
+                    eprintln!("Failed to convert root path to str");
+                    process::exit(1);
+                }),
+            ],
+        )
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to delete root subvolume: {}", e);
+            process::exit(1);
+        });
+    // If root is mounted as anything else, delete /mnt/@_tmp and move root to /mnt/@_tmp
+    } else if !root_mounted_as_tmp {
+        println!("Root is not mounted as @_tmp, moving root to @_tmp");
         // If @_tmp already exists, delete it
         if tmp_root_path.exists() {
+            println!("Deleting existing @_tmp...");
             run_command(
                 "btrfs",
                 &[
@@ -206,23 +227,6 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         )
         .unwrap_or_else(|e| {
             eprintln!("Failed to move root to tmp root: {}", e);
-            process::exit(1);
-        });
-    } else {
-        // If root is already mounted as @_tmp, delete /mnt/@
-        run_command(
-            "btrfs",
-            &[
-                "subvolume",
-                "delete",
-                root_path.to_str().unwrap_or_else(|| {
-                    eprintln!("Failed to convert tmp root path to str");
-                    process::exit(1);
-                }),
-            ],
-        )
-        .unwrap_or_else(|e| {
-            eprintln!("Failed to delete tmp root subvolume: {}", e);
             process::exit(1);
         });
     }
