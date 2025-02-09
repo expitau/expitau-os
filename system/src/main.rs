@@ -36,7 +36,7 @@ enum Commands {
         #[clap(long, default_value = "/mnt")]
         subvolume_dir: String,
         /// Snapshot to rollback to, will use latest if multiple snapshots exist
-        #[clap(long, default_value = "")]
+        #[clap(default_value = "")]
         snapshot_name: String,
     },
     /// List snapshots
