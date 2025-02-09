@@ -1,5 +1,6 @@
 use chrono;
 use clap::{Parser, Subcommand};
+use regex::Regex;
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -48,9 +49,35 @@ enum Commands {
     Reset,
 }
 
+#[derive(Debug)]
 struct SnapshotInfo {
     name: String,
+    date: u32, // The date string with `_` omitted
+    tag: Option<String>,
     number: u32,
+}
+
+impl SnapshotInfo {
+    fn from_str(input: &str) -> Option<Self> {
+        let re = Regex::new(r"^@snapshot-([\d_]+)(?:-([a-zA-Z]+))?-?(\d+)$").ok()?;
+
+        let captures = re.captures(input)?;
+
+        let name = input.to_string();
+        let date_str = captures.get(1)?.as_str().replace('_', "");
+        let date = date_str.parse::<u32>().ok()?;
+
+        let tag = captures.get(2).map(|m| m.as_str().to_string());
+
+        let number = captures.get(3)?.as_str().parse::<u32>().ok()?;
+
+        Some(Self {
+            name,
+            date,
+            tag,
+            number,
+        })
+    }
 }
 
 fn handle_build() {
@@ -59,11 +86,15 @@ fn handle_build() {
 }
 
 fn handle_update(file: &Option<String>) {
-    println!("Running system update...");
-    match file {
-        Some(f) => run_command("ls", &[f]).unwrap(),
-        None => run_command("ls", &[]).unwrap(),
-    };
+    let tests = vec![
+        "@snapshot-2025_02_03-rollback-1",
+        "@snapshot-2025_12_29-3",
+        "@data",
+    ];
+    for test in tests {
+        let snapshot = SnapshotInfo::from_str(test);
+        println!("{:?}", snapshot);
+    }
 }
 
 // Handle `system snapshot --subvolume_dir=/mnt` command
@@ -114,7 +145,10 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
             // Choose whichever snapshot has the highest number (latest)
             match &snapshot_to_use {
                 Some(existing_snapshot) => {
-                    if snapshot.number > existing_snapshot.number {
+                    if snapshot.date > existing_snapshot.date
+                        || (snapshot.date == existing_snapshot.date
+                            && snapshot.number > existing_snapshot.number)
+                    {
                         snapshot_to_use = Some(snapshot);
                     }
                 }
@@ -318,30 +352,7 @@ fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
 
     let snapshots: Vec<SnapshotInfo> = ls_output
         .split('\n')
-        .map(|s| s.to_string())
-        .filter_map(|s| {
-            if s.starts_with("@snapshot") {
-                let date = s.split('-').nth(1);
-                let number = s.split('-').last();
-
-                return match (date, number) {
-                    (Some(_), Some(n)) => match n.parse() {
-                        Ok(num) => Some(SnapshotInfo {
-                            name: s.clone(),
-                            number: num,
-                        }),
-                        _ => None,
-                    },
-                    (Some(_), _) => Some(SnapshotInfo {
-                        name: s.clone(),
-                        number: 0,
-                    }),
-                    _ => None,
-                };
-            } else {
-                None
-            }
-        })
+        .filter_map(|s| SnapshotInfo::from_str(s))
         .collect();
 
     return Ok(snapshots);
@@ -351,12 +362,8 @@ fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<(), St
     let snapshots = list_snapshots(subvolume_dir)?;
 
     let mut latest_snapshot_num: Option<u32> = None;
+    // Get largest snapshot number
     for snapshot in snapshots {
-        // If snapshot name starts with @snapshot-<date>, parse the number
-        if !snapshot.name.starts_with(&snapshot_name) {
-            continue;
-        }
-
         if let Some(num) = latest_snapshot_num {
             if snapshot.number > num {
                 latest_snapshot_num = Some(snapshot.number);
