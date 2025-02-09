@@ -187,7 +187,7 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     let current_date = chrono::Local::now().format("%Y_%m_%d");
     create_snapshot(
         Path::new(subvolume_dir.as_str()),
-        format!("@snapshot-rollback-{}", current_date),
+        format!("@snapshot-{}-rollback", current_date),
     )
     .unwrap_or_else(|e| {
         eprintln!("{}", e);
