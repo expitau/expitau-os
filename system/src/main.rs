@@ -250,6 +250,10 @@ fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
                         }),
                         _ => None,
                     },
+                    (Some(_), _) => Some(SnapshotInfo {
+                        name: s.clone(),
+                        number: 0,
+                    }),
                     _ => None,
                 };
             } else {
@@ -291,7 +295,7 @@ fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<(), St
         "snapshot",
         "/",
         subvolume_dir
-            .join(Path::new(snapshot_name.as_str()))
+            .join(Path::new(format!("{}-{}", snapshot_name, snapshot_num).as_str()))
             .to_str()
             .unwrap_or_else(|| {
                 eprintln!("Failed to convert snapshot path to str");
@@ -329,9 +333,9 @@ fn run_command(command: &str, args: &[&str]) -> Result<String, String> {
         .map_err(|e| format!("Failed to execute {}: {}", command, e))?;
 
     if !output.status.success() {
-        return Err(format!("Command exited with error: {}", output.status));
+        return Err(format!("Command {} exited with error: {}", command, String::from_utf8_lossy(&output.stderr)));
     }
-    
+
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
