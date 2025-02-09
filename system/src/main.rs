@@ -322,7 +322,7 @@ fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
         .filter_map(|s| {
             if s.starts_with("@snapshot") {
                 let date = s.split('-').nth(1);
-                let number = s.split('-').nth(2);
+                let number = s.split('-').last();
 
                 return match (date, number) {
                     (Some(_), Some(n)) => match n.parse() {
