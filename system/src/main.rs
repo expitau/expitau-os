@@ -35,6 +35,7 @@ enum Commands {
         #[clap(long, default_value = "/mnt")]
         subvolume_dir: String,
         /// Snapshot to rollback to, will use latest if multiple snapshots exist
+        #[clap(long, default_value = "")]
         snapshot_name: String,
     },
     /// List snapshots
@@ -65,13 +66,18 @@ fn handle_update(file: &Option<String>) {
     };
 }
 
+// Handle `system snapshot --subvolume_dir=/mnt` command
 fn handle_snapshot(subvolume_dir: String) {
+    // 1. Check if subvolume directory is mounted as btrfs
     check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
 
+    // 2. Name snapshot with current date
     let current_date = chrono::Local::now().format("%Y_%m_%d");
+
+    // 3. Create snapshot, append suffix to ensure it is unique
     create_snapshot(
         Path::new(subvolume_dir.as_str()),
         format!("@snapshot-{}", current_date),
@@ -82,12 +88,15 @@ fn handle_snapshot(subvolume_dir: String) {
     });
 }
 
+// Handle `system rollback --subvolume_dir=/mnt --snapshot_name=<query>` command
 fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
+    // 1. Check if subvolume directory is mounted as btrfs
     check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
 
+    // 2. Figure out what the most recent snapshot that matches the query is
     let mut snapshot_to_use: Option<SnapshotInfo> = None;
     let snapshots = list_snapshots(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
@@ -123,7 +132,7 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         })
         .name;
 
-    // Ask for confirmation
+    // 3. Ask for confirmation to rollback to snapshot
     if !get_confirmation(
         &format!("Rollback to snapshot '{}'?", snapshot_name_full),
         false,
@@ -132,9 +141,14 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         process::exit(0);
     }
 
+    // 4. Rollback
+    // 4.1. If root is mounted as /mnt/@, move it to /mnt/@_tmp (delete /mnt/@_tmp if exists)
+    // 4.2. Delete /mnt/@ if it exists
+    // 4.3. Copy /mnt/@<snapshot> to /mnt/@
     println!("Rolling back to snapshot...");
     let root_path = Path::new(subvolume_dir.as_str()).join("@");
-    let new_root_path = Path::new(subvolume_dir.as_str()).join("@new_root");
+    let tmp_root_path = Path::new(subvolume_dir.as_str()).join("@_tmp");
+    let new_root_path = Path::new(subvolume_dir.as_str()).join(snapshot_name_full);
 
     let current_date = chrono::Local::now().format("%Y_%m_%d");
     create_snapshot(
@@ -146,18 +160,75 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         process::exit(1);
     });
 
-    run_command("btrfs", &[
-            "subvolume",
-            "delete",
-            root_path.to_str().unwrap_or_else(|| {
-                eprintln!("Failed to convert root path to str");
+    // Check if root is mounted as @ or @_tmp
+    let findmnt_output = run_command("findmnt", &["-T", "/", "-o", "source"]).unwrap_or_else(|e| {
+        eprintln!("Failed to check if root is mounted as @ or @_tmp: {}", e);
+        process::exit(1);
+    });
+
+    let lines: Vec<&str> = findmnt_output.split('\n').collect();
+    let root_mounted_as_tmp = lines.iter().any(|line| line.contains("/@_tmp"));
+
+    // If root is mounted as @, move it to @_tmp
+    if !root_mounted_as_tmp {
+        // If @_tmp already exists, delete it
+        if tmp_root_path.exists() {
+            run_command(
+                "btrfs",
+                &[
+                    "subvolume",
+                    "delete",
+                    tmp_root_path.to_str().unwrap_or_else(|| {
+                        eprintln!("Failed to convert tmp root path to str");
+                        process::exit(1);
+                    }),
+                ],
+            )
+            .unwrap_or_else(|e| {
+                eprintln!("Failed to delete tmp root subvolume: {}", e);
                 process::exit(1);
-            }),
-        ]).unwrap_or_else(|e| {
-            eprintln!("Failed to delete root subvolume: {}", e);
+            });
+        }
+
+        // Move @ to @_tmp
+        run_command(
+            "mv",
+            &[
+                root_path.to_str().unwrap_or_else(|| {
+                    eprintln!("Failed to convert root path to str");
+                    process::exit(1);
+                }),
+                tmp_root_path.to_str().unwrap_or_else(|| {
+                    eprintln!("Failed to convert tmp root path to str");
+                    process::exit(1);
+                }),
+            ],
+        )
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to move root to tmp root: {}", e);
             process::exit(1);
         });
-    run_command("btrfsa", &[
+    } else {
+        // If root is already mounted as @_tmp, delete /mnt/@
+        run_command(
+            "btrfs",
+            &[
+                "subvolume",
+                "delete",
+                root_path.to_str().unwrap_or_else(|| {
+                    eprintln!("Failed to convert tmp root path to str");
+                    process::exit(1);
+                }),
+            ],
+        )
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to delete tmp root subvolume: {}", e);
+            process::exit(1);
+        });
+    }
+
+    // Now / -> /mnt/@_tmp, snapshot new root to /mnt/@
+    run_command("btrfs", &[
             "subvolume",
             "snapshot",
             new_root_path.to_str().unwrap_or_else(|| {
@@ -174,6 +245,7 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
             process::exit(1);
         });
 
+    // 5. Ask confirmation then reboot
     if !get_confirmation("Rollback successful! Reboot now?", true) {
         println!("Reboot cancelled");
         process::exit(0);
@@ -185,12 +257,15 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     });
 }
 
+// Handle `system list-snapshots --subvolume_dir=/mnt` command
 fn handle_list_snapshots(subvolume_dir: String) {
+    // 1. Check if subvolume directory is mounted as btrfs
     check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
 
+    // 2. Print snapshots
     let snapshots = list_snapshots(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
@@ -227,12 +302,15 @@ fn check_subvolumes_mounted(subvolume_dir: &Path) -> Result<(), String> {
 }
 
 fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
-    let ls_output = run_command("ls", &[
+    let ls_output = run_command(
+        "ls",
+        &[
             "-1",
             subvolume_dir
                 .to_str()
                 .ok_or("Failed to convert subvolume directory path to str")?,
-        ])?;
+        ],
+    )?;
 
     let snapshots: Vec<SnapshotInfo> = ls_output
         .split('\n')
@@ -290,18 +368,23 @@ fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<(), St
     };
 
     println!("Creating snapshot {}-{}...", snapshot_name, snapshot_num);
-    run_command("btrfs", &[
-        "subvolume",
-        "snapshot",
-        "/",
-        subvolume_dir
-            .join(Path::new(format!("{}-{}", snapshot_name, snapshot_num).as_str()))
-            .to_str()
-            .unwrap_or_else(|| {
-                eprintln!("Failed to convert snapshot path to str");
-                process::exit(1);
-            }),
-    ])?;
+    run_command(
+        "btrfs",
+        &[
+            "subvolume",
+            "snapshot",
+            "/",
+            subvolume_dir
+                .join(Path::new(
+                    format!("{}-{}", snapshot_name, snapshot_num).as_str(),
+                ))
+                .to_str()
+                .unwrap_or_else(|| {
+                    eprintln!("Failed to convert snapshot path to str");
+                    process::exit(1);
+                }),
+        ],
+    )?;
 
     Ok(())
 }
@@ -333,7 +416,11 @@ fn run_command(command: &str, args: &[&str]) -> Result<String, String> {
         .map_err(|e| format!("Failed to execute {}: {}", command, e))?;
 
     if !output.status.success() {
-        return Err(format!("Command {} exited with error: {}", command, String::from_utf8_lossy(&output.stderr)));
+        return Err(format!(
+            "Command {} exited with error: {}",
+            command,
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
     }
 
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
