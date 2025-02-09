@@ -407,7 +407,7 @@ fn get_confirmation(prompt: &str, default: bool) -> bool {
     let input = input.trim().to_lowercase();
 
     if default {
-        return matches!(input.as_str(), "n" | "no"); // Accepts 'n' or 'no' as rejection, default yes
+        return !matches!(input.as_str(), "n" | "no"); // Accepts 'n' or 'no' as rejection, default yes
     } else {
         return matches!(input.as_str(), "y" | "yes"); // Accepts 'y' or 'yes' as confirmation, default no
     }
