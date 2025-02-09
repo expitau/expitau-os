@@ -333,7 +333,7 @@ fn run_command(command: &str, args: &[&str]) -> Result<String, String> {
         return Err(format!("Command exited with error: {}", output.status));
     }
 
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
 fn main() {
