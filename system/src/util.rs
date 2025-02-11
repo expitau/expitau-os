@@ -1,5 +1,40 @@
 use crate::*;
 
+#[derive(Debug)]
+pub struct SnapshotInfo {
+    pub path: PathBuf,
+    pub root: String,
+    pub root_id: u32,
+    pub tag: String,
+    pub tag_id: u32,
+    pub date: u32,
+}
+
+impl SnapshotInfo {
+    fn from_str(input: &str) -> Result<Self, String> {
+        let re = Regex::new(r"^@_([a-zA-Z\d_]+)-(\d+)-([a-zA-Z\d_]+)-(\d+)-(\d{8})$").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
+
+        let captures = re.captures(input).ok_or("Failed to match regex")?;
+
+        let path = PathBuf::from(input).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", input, e))?;
+        let root = captures.get(1).ok_or("Failed to get root name")?.as_str();
+        let root_id = captures.get(2).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
+        let tag = captures.get(3).ok_or("Failed to get tag name")?.as_str();
+        let tag_id = captures.get(4).ok_or("Failed to get tag ID")?.as_str().parse().map_err(|e| format!("Failed to parse tag ID: {}", e))?;
+        let date = captures.get(5).ok_or("Failed to get date")?.as_str().parse().map_err(|e| format!("Failed to parse date: {}", e))?;
+
+
+        Ok(Self {
+            path,
+            root: root.to_string(),
+            root_id,
+            tag: tag.to_string(),
+            tag_id,
+            date,
+        })
+    }
+}
+
 pub fn check_subvolumes_mounted(subvolume_dir: &Path) -> Result<(), String> {
     let mount_path = subvolume_dir
         .to_str()
@@ -33,24 +68,26 @@ pub fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String>
 
     let snapshots: Vec<SnapshotInfo> = ls_output
         .split('\n')
-        .filter_map(|s| SnapshotInfo::from_str(s))
+        .filter_map(|s| SnapshotInfo::from_str(s).ok())
         .collect();
 
     return Ok(snapshots);
 }
 
-pub fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<(), String> {
+pub fn create_snapshot(subvolume_dir: &Path, tag: String) -> Result<(), String> {
+    let current_date = chrono::Local::now().format("%Y_%m_%d");
+
     let snapshots = list_snapshots(subvolume_dir)?;
 
     let mut latest_snapshot_num: Option<u32> = None;
     // Get largest snapshot number
     for snapshot in snapshots {
         if let Some(num) = latest_snapshot_num {
-            if snapshot.number > num {
-                latest_snapshot_num = Some(snapshot.number);
+            if snapshot.tag_id > num {
+                latest_snapshot_num = Some(snapshot.tag_id);
             }
         } else {
-            latest_snapshot_num = Some(snapshot.number);
+            latest_snapshot_num = Some(snapshot.tag_id);
         }
     }
 
@@ -59,15 +96,16 @@ pub fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<()
         None => 1,
     };
 
-    println!("Creating snapshot {}-{}...", snapshot_name, snapshot_num);
+    println!("Creating snapshot {}-{}...", tag, snapshot_num);
     run_command(
         Command::new("btrfs").args(&[
             "subvolume",
             "snapshot",
+            "-r",
             "/",
             subvolume_dir
                 .join(Path::new(
-                    format!("{}-{}", snapshot_name, snapshot_num).as_str(),
+                    format!("{}-{}", tag, snapshot_num).as_str(),
                 ))
                 .to_str()
                 .unwrap_or_else(|| {

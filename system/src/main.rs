@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 use regex::Regex;
 use std::io;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{self, Command};
 
 #[derive(Parser)]
@@ -70,37 +70,6 @@ fn main() {
     }
 }
 
-#[derive(Debug)]
-struct SnapshotInfo {
-    name: String,
-    date: u32, // The date string with `_` omitted
-    tag: Option<String>,
-    number: u32,
-}
-
-impl SnapshotInfo {
-    fn from_str(input: &str) -> Option<Self> {
-        let re = Regex::new(r"^@snapshot-([\d_]+)(?:-([a-zA-Z]+))?-?(\d+)$").ok()?;
-
-        let captures = re.captures(input)?;
-
-        let name = input.to_string();
-        let date_str = captures.get(1)?.as_str().replace('_', "");
-        let date = date_str.parse::<u32>().ok()?;
-
-        let tag = captures.get(2).map(|m| m.as_str().to_string());
-
-        let number = captures.get(3)?.as_str().parse::<u32>().ok()?;
-
-        Some(Self {
-            name,
-            date,
-            tag,
-            number,
-        })
-    }
-}
-
 fn handle_build(_cli: &Cli) {
     println!("Running build process...");
 
@@ -139,7 +108,7 @@ fn handle_tree(cli: &Cli) {
     });
 
     for snapshot in snapshots {
-        println!("{}", snapshot.name);
+        println!("{}", snapshot.tag);
     }
 }
 
@@ -151,13 +120,10 @@ fn handle_snapshot(cli: &Cli) {
         process::exit(1);
     });
 
-    // 2. Name snapshot with current date
-    let current_date = chrono::Local::now().format("%Y_%m_%d");
-
     // 3. Create snapshot, append suffix to ensure it is unique
     create_snapshot(
         Path::new(cli.subvolume_dir.as_str()),
-        format!("@snapshot-{}", current_date),
+        format!("snapshot"),
     )
     .unwrap_or_else(|e| {
         eprintln!("{}", e);
@@ -182,10 +148,10 @@ fn handle_rollback(cli: &Cli, snapshot_name: String) {
 
     // Loop over snapshots, and check if it starts with <snapshot_name> or @<snapshot_name> or @snapshot-<snapshot_name>
     for snapshot in snapshots {
-        if snapshot.name.starts_with(&snapshot_name)
-            || snapshot.name.starts_with(&format!("@{}", snapshot_name))
+        if snapshot.tag.starts_with(&snapshot_name)
+            || snapshot.tag.starts_with(&format!("@{}", snapshot_name))
             || snapshot
-                .name
+                .tag
                 .starts_with(&format!("@snapshot-{}", snapshot_name))
         {
             // Choose whichever snapshot has the highest number (latest)
@@ -193,7 +159,7 @@ fn handle_rollback(cli: &Cli, snapshot_name: String) {
                 Some(existing_snapshot) => {
                     if snapshot.date > existing_snapshot.date
                         || (snapshot.date == existing_snapshot.date
-                            && snapshot.number > existing_snapshot.number)
+                            && snapshot.tag_id > existing_snapshot.tag_id)
                     {
                         snapshot_to_use = Some(snapshot);
                     }
@@ -210,7 +176,7 @@ fn handle_rollback(cli: &Cli, snapshot_name: String) {
             eprintln!("Snapshot {} not found", snapshot_name);
             process::exit(1);
         })
-        .name;
+        .tag;
 
     // 3. Ask for confirmation to rollback to snapshot
     if !get_confirmation(
@@ -388,7 +354,18 @@ fn handle_lock(cli: &Cli) {
         process::exit(1);
     });
 
-    todo!("Implement lock command");
+    run_command(Command::new("btrfs").args(&[
+        "property",
+        "set",
+        "/",
+        "ro",
+        "true"
+    ])).unwrap_or_else(|e| {
+        eprintln!("Failed to lock system: {}", e);
+        process::exit(1);
+    });
+
+    println!("Success! System is set to immutable")
 }
 
 fn handle_unlock(cli: &Cli) {
@@ -397,5 +374,16 @@ fn handle_unlock(cli: &Cli) {
         process::exit(1);
     });
 
-    todo!("Implement unlock command");
+    run_command(Command::new("btrfs").args(&[
+        "property",
+        "set",
+        "/",
+        "ro",
+        "false"
+    ])).unwrap_or_else(|e| {
+        eprintln!("Failed to unlock system: {}", e);
+        process::exit(1);
+    });
+
+    println!("Success! System is set to mutable")
 }
