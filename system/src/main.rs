@@ -1,3 +1,6 @@
+mod util;
+use util::*;
+
 use chrono;
 use clap::{Parser, Subcommand};
 use regex::Regex;
@@ -11,42 +14,60 @@ use std::process::{self, Command};
 #[command(version = "1.0")]
 #[command(about = "System administration toolkit", long_about = None)]
 struct Cli {
+    /// Btrfs subvolume directory
+    #[clap(long, default_value = "/mnt")]
+    subvolume_dir: String,
+
     #[command(subcommand)]
     command: Commands,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Build system components
-    Build,
-    /// Update system configuration
-    Update {
-        /// Optional file to update
-        file: Option<String>,
+    /// Display the system tree
+    Tree,
+    /// Create a system snapshot
+    Snapshot,
+    /// Delete a system snapshot
+    Delete {
+        /// Snapshot to delete
+        snapshot_name: String,
     },
-    /// Create system snapshot
-    Snapshot {
-        /// Btrfs subvolume directory
-        #[clap(long, default_value = "/mnt")]
-        subvolume_dir: String,
-    },
-    /// Rollback to previous state
+    /// Roll back to a specific snapshot
     Rollback {
-        /// Btrfs subvolume directory
-        #[clap(long, default_value = "/mnt")]
-        subvolume_dir: String,
         /// Snapshot to rollback to, will use latest if multiple snapshots exist
         #[clap(default_value = "")]
         snapshot_name: String,
     },
-    /// List snapshots
-    ListSnapshots {
-        /// Btrfs subvolume directory
-        #[clap(long, default_value = "/mnt")]
-        subvolume_dir: String,
+    /// Reset the system, optionally specifying a branch
+    Reset {
+        /// Branch to reset to, defaults to current
+        branch: Option<String>,
     },
-    /// Reset system configuration
-    Reset,
+    /// Put the system in immutable mode
+    Lock,
+    /// Put the system in writable mode
+    Unlock,
+    /// Rebuild the system, then switch to the new version
+    Migrate {
+        /// Path to the new system binary
+        file: Option<String>,
+    },
+}
+
+fn main() {
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::Tree => handle_tree(&cli),
+        Commands::Snapshot => handle_snapshot(&cli),
+        Commands::Rollback { snapshot_name } => handle_rollback(&cli, snapshot_name.to_string()),
+        Commands::Migrate { file } => handle_migrate(&cli, file),
+        Commands::Reset { branch } => handle_reset(&cli, branch),
+        Commands::Delete { snapshot_name } => handle_delete(&cli, snapshot_name.to_string()),
+        Commands::Lock => handle_lock(&cli),
+        Commands::Unlock => handle_unlock(&cli),
+    }
 }
 
 #[derive(Debug)]
@@ -80,27 +101,52 @@ impl SnapshotInfo {
     }
 }
 
-fn handle_build() {
+fn handle_build(_cli: &Cli) {
     println!("Running build process...");
-    run_command("ls", &["-l", "-a"]).unwrap();
+
+    run_command(
+        Command::new("cargo")
+            .current_dir("/usr/src/system")
+            .args(&["build", "--release"]),
+    )
+    .unwrap_or_else(|e| {
+        eprintln!("Failed to build system: {}", e);
+        process::exit(1);
+    });
+
+    run_command(Command::new("cp").args(&[
+        "/usr/src/system/target/release/system",
+        "/usr/local/sbin/system",
+    ]))
+    .unwrap_or_else(|e| {
+        eprintln!("Failed to copy system binary: {}", e);
+        process::exit(1);
+    });
 }
 
-fn handle_update(file: &Option<String>) {
-    let tests = vec![
-        "@snapshot-2025_02_03-rollback-1",
-        "@snapshot-2025_12_29-3",
-        "@data",
-    ];
-    for test in tests {
-        let snapshot = SnapshotInfo::from_str(test);
-        println!("{:?}", snapshot);
+// Handle `system list-snapshots --subvolume_dir=/mnt` command
+fn handle_tree(cli: &Cli) {
+    // 1. Check if subvolume directory is mounted as btrfs
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    // 2. Print snapshots
+    let snapshots = list_snapshots(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    for snapshot in snapshots {
+        println!("{}", snapshot.name);
     }
 }
 
 // Handle `system snapshot --subvolume_dir=/mnt` command
-fn handle_snapshot(subvolume_dir: String) {
+fn handle_snapshot(cli: &Cli) {
     // 1. Check if subvolume directory is mounted as btrfs
-    check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
@@ -110,7 +156,7 @@ fn handle_snapshot(subvolume_dir: String) {
 
     // 3. Create snapshot, append suffix to ensure it is unique
     create_snapshot(
-        Path::new(subvolume_dir.as_str()),
+        Path::new(cli.subvolume_dir.as_str()),
         format!("@snapshot-{}", current_date),
     )
     .unwrap_or_else(|e| {
@@ -120,16 +166,16 @@ fn handle_snapshot(subvolume_dir: String) {
 }
 
 // Handle `system rollback --subvolume_dir=/mnt --snapshot_name=<query>` command
-fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
+fn handle_rollback(cli: &Cli, snapshot_name: String) {
     // 1. Check if subvolume directory is mounted as btrfs
-    check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
 
     // 2. Figure out what the most recent snapshot that matches the query is
     let mut snapshot_to_use: Option<SnapshotInfo> = None;
-    let snapshots = list_snapshots(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+    let snapshots = list_snapshots(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
@@ -180,13 +226,13 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     // 4.2. Delete /mnt/@ if it exists
     // 4.3. Copy /mnt/@<snapshot> to /mnt/@
     println!("Rolling back to snapshot...");
-    let root_path = Path::new(subvolume_dir.as_str()).join("@");
-    let tmp_root_path = Path::new(subvolume_dir.as_str()).join("@_tmp");
-    let new_root_path = Path::new(subvolume_dir.as_str()).join(snapshot_name_full);
+    let root_path = Path::new(cli.subvolume_dir.as_str()).join("@");
+    let tmp_root_path = Path::new(cli.subvolume_dir.as_str()).join("@_tmp");
+    let new_root_path = Path::new(cli.subvolume_dir.as_str()).join(snapshot_name_full);
 
     let current_date = chrono::Local::now().format("%Y_%m_%d");
     create_snapshot(
-        Path::new(subvolume_dir.as_str()),
+        Path::new(cli.subvolume_dir.as_str()),
         format!("@snapshot-{}-rollback", current_date),
     )
     .unwrap_or_else(|e| {
@@ -195,10 +241,11 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     });
 
     // Check if root is mounted as @ or @_tmp
-    let findmnt_output = run_command("findmnt", &["-T", "/", "-o", "source"]).unwrap_or_else(|e| {
-        eprintln!("Failed to check if root is mounted as @ or @_tmp: {}", e);
-        process::exit(1);
-    });
+    let findmnt_output = run_command(Command::new("findmnt").args(&["-T", "/", "-o", "source"]))
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to check if root is mounted as @ or @_tmp: {}", e);
+            process::exit(1);
+        });
 
     let lines: Vec<&str> = findmnt_output.split('\n').collect();
     let root_mounted_as_tmp = lines.iter().any(|line| line.contains("/@_tmp"));
@@ -207,17 +254,14 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     if root_mounted_as_tmp && root_path.exists() {
         println!("Root is mounted as @_tmp, deleting /mnt/@");
         // If root is already mounted as @_tmp, delete /mnt/@
-        run_command(
-            "btrfs",
-            &[
-                "subvolume",
-                "delete",
-                root_path.to_str().unwrap_or_else(|| {
-                    eprintln!("Failed to convert root path to str");
-                    process::exit(1);
-                }),
-            ],
-        )
+        run_command(Command::new("btrfs").args(&[
+            "subvolume",
+            "delete",
+            root_path.to_str().unwrap_or_else(|| {
+                eprintln!("Failed to convert root path to str");
+                process::exit(1);
+            }),
+        ]))
         .unwrap_or_else(|e| {
             eprintln!("Failed to delete root subvolume: {}", e);
             process::exit(1);
@@ -228,17 +272,14 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         // If @_tmp already exists, delete it
         if tmp_root_path.exists() {
             println!("Deleting existing @_tmp...");
-            run_command(
-                "btrfs",
-                &[
-                    "subvolume",
-                    "delete",
-                    tmp_root_path.to_str().unwrap_or_else(|| {
-                        eprintln!("Failed to convert tmp root path to str");
-                        process::exit(1);
-                    }),
-                ],
-            )
+            run_command(Command::new("btrfs").args(&[
+                "subvolume",
+                "delete",
+                tmp_root_path.to_str().unwrap_or_else(|| {
+                    eprintln!("Failed to convert tmp root path to str");
+                    process::exit(1);
+                }),
+            ]))
             .unwrap_or_else(|e| {
                 eprintln!("Failed to delete tmp root subvolume: {}", e);
                 process::exit(1);
@@ -246,19 +287,16 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         }
 
         // Move @ to @_tmp
-        run_command(
-            "mv",
-            &[
-                root_path.to_str().unwrap_or_else(|| {
-                    eprintln!("Failed to convert root path to str");
-                    process::exit(1);
-                }),
-                tmp_root_path.to_str().unwrap_or_else(|| {
-                    eprintln!("Failed to convert tmp root path to str");
-                    process::exit(1);
-                }),
-            ],
-        )
+        run_command(Command::new("mv").args(&[
+            root_path.to_str().unwrap_or_else(|| {
+                eprintln!("Failed to convert root path to str");
+                process::exit(1);
+            }),
+            tmp_root_path.to_str().unwrap_or_else(|| {
+                eprintln!("Failed to convert tmp root path to str");
+                process::exit(1);
+            }),
+        ]))
         .unwrap_or_else(|e| {
             eprintln!("Failed to move root to tmp root: {}", e);
             process::exit(1);
@@ -266,7 +304,7 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
     }
 
     // Now / -> /mnt/@_tmp, snapshot new root to /mnt/@
-    run_command("btrfs", &[
+    run_command(Command::new("btrfs").args(&[
             "subvolume",
             "snapshot",
             new_root_path.to_str().unwrap_or_else(|| {
@@ -277,7 +315,7 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
                 eprintln!("Failed to convert root path to str");
                 process::exit(1);
             }),
-        ]).unwrap_or_else(|e| {
+        ])).unwrap_or_else(|e| {
             eprintln!("FATAL ERROR: Failed to copy snapshot subvolume to root: {}", e);
             eprintln!("Rollback failed in a dangerous state, attempt to recover manually with `sudo mv {:?} {:?}`", new_root_path, root_path);
             process::exit(1);
@@ -289,168 +327,75 @@ fn handle_rollback(subvolume_dir: String, snapshot_name: String) {
         process::exit(0);
     }
 
-    run_command("reboot", &[]).unwrap_or_else(|e| {
+    run_command(&mut Command::new("reboot")).unwrap_or_else(|e| {
         eprintln!("Failed to reboot: {}", e);
         process::exit(0);
     });
 }
 
-// Handle `system list-snapshots --subvolume_dir=/mnt` command
-fn handle_list_snapshots(subvolume_dir: String) {
+fn handle_migrate(cli: &Cli, file: &Option<String>) {
     // 1. Check if subvolume directory is mounted as btrfs
-    check_subvolumes_mounted(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
     });
 
-    // 2. Print snapshots
-    let snapshots = list_snapshots(Path::new(subvolume_dir.as_str())).unwrap_or_else(|e| {
-        eprintln!("{}", e);
-        process::exit(1);
-    });
-
-    for snapshot in snapshots {
-        println!("{}", snapshot.name);
-    }
-}
-
-fn handle_reset() {
-    println!("Resetting system configuration...");
-    run_command("ls", &["-a", "/etc/default"]).unwrap();
-}
-
-fn check_subvolumes_mounted(subvolume_dir: &Path) -> Result<(), String> {
-    let mount_path = subvolume_dir
-        .to_str()
-        .ok_or("Failed to convert subvolume directory path to str")?;
-
-    // Get output of findmnt command
-    let findmnt_output = run_command("findmnt", &["-T", mount_path, "-o", "target,fstype"])?;
-
-    // Get each line of output and check if subvolume directory is mounted
-    let lines: Vec<&str> = findmnt_output.split('\n').collect();
-
-    for line in lines {
-        if line.starts_with(mount_path) && line.contains("btrfs") {
-            return Ok(());
+    if let Some(file_path) = file {
+        // 2. Check if file path exists
+        let file_path = Path::new(file_path);
+        if !file_path.exists() {
+            eprintln!("File {} does not exist", file_path.display());
+            process::exit(1);
         }
-    }
 
-    return Err(format!("Subvolume directory {} is not mounted", mount_path));
-}
-
-fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
-    let ls_output = run_command(
-        "ls",
-        &[
-            "-1",
-            subvolume_dir
-                .to_str()
-                .ok_or("Failed to convert subvolume directory path to str")?,
-        ],
-    )?;
-
-    let snapshots: Vec<SnapshotInfo> = ls_output
-        .split('\n')
-        .filter_map(|s| SnapshotInfo::from_str(s))
-        .collect();
-
-    return Ok(snapshots);
-}
-
-fn create_snapshot(subvolume_dir: &Path, snapshot_name: String) -> Result<(), String> {
-    let snapshots = list_snapshots(subvolume_dir)?;
-
-    let mut latest_snapshot_num: Option<u32> = None;
-    // Get largest snapshot number
-    for snapshot in snapshots {
-        if let Some(num) = latest_snapshot_num {
-            if snapshot.number > num {
-                latest_snapshot_num = Some(snapshot.number);
+        // 3. Check if file ends in .sqfs, otherwise prompt user to confirm
+        if file_path.extension().unwrap_or_default() != "sqfs" {
+            if !get_confirmation(
+                "File does not end in .sqfs, are you sure you want to continue?",
+                false,
+            ) {
+                println!("Migration cancelled");
+                process::exit(0);
             }
-        } else {
-            latest_snapshot_num = Some(snapshot.number);
         }
-    }
 
-    let snapshot_num = match latest_snapshot_num {
-        Some(num) => num + 1,
-        None => 1,
-    };
+        // 4. Create new tree root
 
-    println!("Creating snapshot {}-{}...", snapshot_name, snapshot_num);
-    run_command(
-        "btrfs",
-        &[
-            "subvolume",
-            "snapshot",
-            "/",
-            subvolume_dir
-                .join(Path::new(
-                    format!("{}-{}", snapshot_name, snapshot_num).as_str(),
-                ))
-                .to_str()
-                .unwrap_or_else(|| {
-                    eprintln!("Failed to convert snapshot path to str");
-                    process::exit(1);
-                }),
-        ],
-    )?;
-
-    Ok(())
-}
-
-fn get_confirmation(prompt: &str, default: bool) -> bool {
-    if default {
-        print!("{} [Y/n]: ", prompt);
-    } else {
-        print!("{} [y/N]: ", prompt);
-    }
-
-    io::stdout().flush().unwrap(); // Ensure the prompt is displayed immediately
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    let input = input.trim().to_lowercase();
-
-    if default {
-        return !matches!(input.as_str(), "n" | "no"); // Accepts 'n' or 'no' as rejection, default yes
-    } else {
-        return matches!(input.as_str(), "y" | "yes"); // Accepts 'y' or 'yes' as confirmation, default no
     }
 }
 
-fn run_command(command: &str, args: &[&str]) -> Result<String, String> {
-    let output = Command::new(command)
-        .args(args)
-        .output()
-        .map_err(|e| format!("Failed to execute {}: {}", command, e))?;
-
-    if !output.status.success() {
-        return Err(format!(
-            "Command {} exited with error: {}",
-            command,
-            String::from_utf8_lossy(&output.stderr).trim()
-        ));
-    }
-
-    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+fn handle_reset(cli: &Cli, branch: &Option<String>) {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+    
+    todo!("Implement reset command");
 }
 
-fn main() {
-    let cli = Cli::parse();
+fn handle_delete(cli: &Cli, snapshot_name: String) {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
 
-    match &cli.command {
-        Commands::Build => handle_build(),
-        Commands::Update { file } => handle_update(file),
-        Commands::Snapshot { subvolume_dir } => handle_snapshot(subvolume_dir.to_string()),
-        Commands::Rollback {
-            subvolume_dir,
-            snapshot_name,
-        } => handle_rollback(subvolume_dir.to_string(), snapshot_name.to_string()),
-        Commands::ListSnapshots { subvolume_dir } => {
-            handle_list_snapshots(subvolume_dir.to_string())
-        }
-        Commands::Reset => handle_reset(),
-    }
+    todo!("Implement delete command");
+}
+
+fn handle_lock(cli: &Cli) {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    todo!("Implement lock command");
+}
+
+fn handle_unlock(cli: &Cli) {
+    check_subvolumes_mounted(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    todo!("Implement unlock command");
 }
