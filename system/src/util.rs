@@ -14,17 +14,17 @@ pub struct SnapshotInfo {
 impl SnapshotInfo {
     fn from_str(input: &str) -> Result<Self, String> {
         // @_arch-1-snapshot-2-20251231
-        let re = Regex::new(r"uuid ([a-z0-9-]+) path @_([a-zA-Z\d_]+)-(\d+)-([a-zA-Z\d_]+)-(\d+)-(\d{8})$").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
+        let re = Regex::new(r"uuid ([a-z0-9-]+) path (@_([a-zA-Z\d_]+)-(\d+)-([a-zA-Z\d_]+)-(\d+)-(\d{8}))$").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
 
         let captures = re.captures(input).ok_or("Failed to match regex")?;
 
-        let path = PathBuf::from(input).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", input, e))?;
+        let path = PathBuf::from(captures.get(2).ok_or("Failed to get path")?.as_str()).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", input, e))?;
         let uuid = captures.get(1).ok_or("Failed to get UUID")?.as_str().to_string();
-        let root = captures.get(2).ok_or("Failed to get root name")?.as_str();
-        let root_id = captures.get(3).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
-        let tag = captures.get(4).ok_or("Failed to get tag name")?.as_str();
-        let tag_id = captures.get(5).ok_or("Failed to get tag ID")?.as_str().parse().map_err(|e| format!("Failed to parse tag ID: {}", e))?;
-        let date = captures.get(6).ok_or("Failed to get date")?.as_str().parse().map_err(|e| format!("Failed to parse date: {}", e))?;
+        let root = captures.get(3).ok_or("Failed to get root name")?.as_str();
+        let root_id = captures.get(4).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
+        let tag = captures.get(5).ok_or("Failed to get tag name")?.as_str();
+        let tag_id = captures.get(6).ok_or("Failed to get tag ID")?.as_str().parse().map_err(|e| format!("Failed to parse tag ID: {}", e))?;
+        let date = captures.get(7).ok_or("Failed to get date")?.as_str().parse().map_err(|e| format!("Failed to parse date: {}", e))?;
 
 
         Ok(Self {
