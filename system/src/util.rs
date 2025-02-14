@@ -20,7 +20,8 @@ impl SnapshotInfo {
 
         println!("Captures: {:?}", captures);
 
-        let path = PathBuf::from(captures.get(2).ok_or("Failed to get path")?.as_str()).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", input, e))?;
+        let path_str = captures.get(2).ok_or("Failed to get path")?.as_str();
+        let path = PathBuf::from(path_str).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", path_str, e))?;
         let uuid = captures.get(1).ok_or("Failed to get UUID")?.as_str().to_string();
         let root = captures.get(3).ok_or("Failed to get root name")?.as_str();
         let root_id = captures.get(4).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
