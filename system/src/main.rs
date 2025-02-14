@@ -121,14 +121,12 @@ fn handle_snapshot(cli: &Cli) {
     });
 
     // 3. Create snapshot, append suffix to ensure it is unique
-    create_snapshot(
-        Path::new(cli.subvolume_dir.as_str()),
-        format!("snapshot"),
-    )
-    .unwrap_or_else(|e| {
-        eprintln!("{}", e);
-        process::exit(1);
-    });
+    create_snapshot(Path::new(cli.subvolume_dir.as_str()), format!("snapshot")).unwrap_or_else(
+        |e| {
+            eprintln!("{}", e);
+            process::exit(1);
+        },
+    );
 }
 
 // Handle `system rollback --subvolume_dir=/mnt --snapshot_name=<query>` command
@@ -140,43 +138,21 @@ fn handle_rollback(cli: &Cli, snapshot_name: String) {
     });
 
     // 2. Figure out what the most recent snapshot that matches the query is
-    let mut snapshot_to_use: Option<SnapshotInfo> = None;
-    let snapshots = list_snapshots(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
-        eprintln!("{}", e);
+    let snapshot_to_use =
+        get_snapshot_by_name(Path::new(cli.subvolume_dir.as_str()), &snapshot_name).unwrap_or_else(
+            |e| {
+                eprintln!("{}", e);
+                process::exit(1);
+            },
+        );
+
+    let snapshot_name_full = snapshot_to_use.path.file_name().unwrap_or_else(|| {
+        eprintln!("Failed to get snapshot name");
+        process::exit(1);
+    }).to_str().unwrap_or_else(|| {
+        eprintln!("Failed to convert snapshot name to str");
         process::exit(1);
     });
-
-    // Loop over snapshots, and check if it starts with <snapshot_name> or @<snapshot_name> or @snapshot-<snapshot_name>
-    for snapshot in snapshots {
-        if snapshot.tag.starts_with(&snapshot_name)
-            || snapshot.tag.starts_with(&format!("@{}", snapshot_name))
-            || snapshot
-                .tag
-                .starts_with(&format!("@snapshot-{}", snapshot_name))
-        {
-            // Choose whichever snapshot has the highest number (latest)
-            match &snapshot_to_use {
-                Some(existing_snapshot) => {
-                    if snapshot.date > existing_snapshot.date
-                        || (snapshot.date == existing_snapshot.date
-                            && snapshot.tag_id > existing_snapshot.tag_id)
-                    {
-                        snapshot_to_use = Some(snapshot);
-                    }
-                }
-                None => {
-                    snapshot_to_use = Some(snapshot);
-                }
-            }
-        }
-    }
-
-    let snapshot_name_full = snapshot_to_use
-        .unwrap_or_else(|| {
-            eprintln!("Snapshot {} not found", snapshot_name);
-            process::exit(1);
-        })
-        .tag;
 
     // 3. Ask for confirmation to rollback to snapshot
     if !get_confirmation(
@@ -326,7 +302,54 @@ fn handle_migrate(cli: &Cli, file: &Option<String>) {
         }
 
         // 4. Create new tree root
+        let root_name = file_path
+            .file_stem()
+            .unwrap_or_else(|| {
+                eprintln!("Failed to get file stem from path {}", file_path.display());
+                process::exit(1);
+            })
+            .to_str()
+            .unwrap_or_else(|| {
+                eprintln!("Failed to convert root name to str");
+                process::exit(1);
+            });
 
+        let snapshots = list_snapshots(Path::new(cli.subvolume_dir.as_str())).unwrap_or_else(|e| {
+            eprintln!("{}", e);
+            process::exit(1);
+        });
+
+        let mut latest_root_id: u32 = 1;
+
+        for snapshot in snapshots {
+            if snapshot.root_id > latest_root_id {
+                latest_root_id = snapshot.root_id;
+            }
+        }
+
+        run_command(
+            Command::new("btrfs").args(&[
+                "subvolume",
+                "create",
+                &Path::new(cli.subvolume_dir.as_str())
+                    .join(format!(
+                        "@_{}-{}-0-{}",
+                        root_name,
+                        latest_root_id + 1,
+                        chrono::Local::now().format("%Y%m%d"),
+                    ))
+                    .as_os_str()
+                    .to_str()
+                    .unwrap_or_else(|| {
+                        eprintln!("Failed to convert snapshot path to str");
+                        process::exit(1);
+                    }),
+            ]),
+        )
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to create new root subvolume: {}", e);
+            process::exit(1);
+        });
     }
 }
 
@@ -335,7 +358,7 @@ fn handle_reset(cli: &Cli, branch: &Option<String>) {
         eprintln!("{}", e);
         process::exit(1);
     });
-    
+
     todo!("Implement reset command");
 }
 
@@ -345,7 +368,41 @@ fn handle_delete(cli: &Cli, snapshot_name: String) {
         process::exit(1);
     });
 
-    todo!("Implement delete command");
+    let snapshot_to_delete =
+        get_snapshot_by_name(Path::new(cli.subvolume_dir.as_str()), &snapshot_name).unwrap_or_else(
+            |e| {
+                eprintln!("{}", e);
+                process::exit(1);
+            },
+        );
+
+    let snapshot_name_full = snapshot_to_delete.path.file_name().unwrap_or_else(|| {
+        eprintln!("Failed to get snapshot name");
+        process::exit(1);
+    }).to_str().unwrap_or_else(|| {
+        eprintln!("Failed to convert snapshot name to str");
+        process::exit(1);
+    });
+
+    if !get_confirmation(
+        &format!("Delete snapshot '{}'?", snapshot_name_full),
+        false,
+    ) {
+        println!("Delete cancelled");
+        process::exit(0);
+    }
+
+    run_command(Command::new("btrfs").args(&[
+        "subvolume",
+        "delete",
+        snapshot_to_delete.path.to_str().unwrap_or_else(|| {
+            eprintln!("Failed to convert snapshot path to str");
+            process::exit(1);
+        }),
+    ])).unwrap_or_else(|e| {
+        eprintln!("Failed to delete snapshot: {}", e);
+        process::exit(1);
+    });
 }
 
 fn handle_lock(cli: &Cli) {
@@ -354,16 +411,11 @@ fn handle_lock(cli: &Cli) {
         process::exit(1);
     });
 
-    run_command(Command::new("btrfs").args(&[
-        "property",
-        "set",
-        "/",
-        "ro",
-        "true"
-    ])).unwrap_or_else(|e| {
-        eprintln!("Failed to lock system: {}", e);
-        process::exit(1);
-    });
+    run_command(Command::new("btrfs").args(&["property", "set", "/", "ro", "true"]))
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to lock system: {}", e);
+            process::exit(1);
+        });
 
     println!("Success! System is set to immutable")
 }
@@ -374,16 +426,11 @@ fn handle_unlock(cli: &Cli) {
         process::exit(1);
     });
 
-    run_command(Command::new("btrfs").args(&[
-        "property",
-        "set",
-        "/",
-        "ro",
-        "false"
-    ])).unwrap_or_else(|e| {
-        eprintln!("Failed to unlock system: {}", e);
-        process::exit(1);
-    });
+    run_command(Command::new("btrfs").args(&["property", "set", "/", "ro", "false"]))
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to unlock system: {}", e);
+            process::exit(1);
+        });
 
     println!("Success! System is set to mutable")
 }

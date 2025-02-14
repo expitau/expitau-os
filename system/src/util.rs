@@ -12,6 +12,7 @@ pub struct SnapshotInfo {
 
 impl SnapshotInfo {
     fn from_str(input: &str) -> Result<Self, String> {
+        // @_arch-1-snapshot-2-20251231
         let re = Regex::new(r"^@_([a-zA-Z\d_]+)-(\d+)-([a-zA-Z\d_]+)-(\d+)-(\d{8})$").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
 
         let captures = re.captures(input).ok_or("Failed to match regex")?;
@@ -74,8 +75,41 @@ pub fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String>
     return Ok(snapshots);
 }
 
+pub fn get_snapshot_by_name(subvolume_dir: &Path, name: &str) -> Result<SnapshotInfo, String> {
+    let mut snapshot_to_use: Option<SnapshotInfo> = None;
+    let snapshots = list_snapshots(subvolume_dir)?;
+
+    // Loop over snapshots, and check if its tag is <name>
+    for snapshot in snapshots {
+        if snapshot.tag == name
+        {
+            // Choose whichever snapshot has the highest number (latest)
+            match &snapshot_to_use {
+                Some(existing_snapshot) => {
+                    if snapshot.date > existing_snapshot.date
+                        || (snapshot.date == existing_snapshot.date
+                            && snapshot.tag_id > existing_snapshot.tag_id)
+                    {
+                        snapshot_to_use = Some(snapshot);
+                    }
+                }
+                None => {
+                    snapshot_to_use = Some(snapshot);
+                }
+            }
+        }
+    }
+
+    return snapshot_to_use.ok_or(format!("No snapshot found with tag {}", name));
+}
+
+pub fn get_root_branch(subvolume_dir: &Path) -> Result<SnapshotInfo, String> {
+    todo!()
+}
+
 pub fn create_snapshot(subvolume_dir: &Path, tag: String) -> Result<(), String> {
-    let current_date = chrono::Local::now().format("%Y_%m_%d");
+    let current_date = chrono::Local::now().format("%Y%m%d");
+    let root = "arch";
 
     let snapshots = list_snapshots(subvolume_dir)?;
 
@@ -96,7 +130,8 @@ pub fn create_snapshot(subvolume_dir: &Path, tag: String) -> Result<(), String> 
         None => 1,
     };
 
-    println!("Creating snapshot {}-{}...", tag, snapshot_num);
+    let snapshot_name = format!("@_{}-{}-{}-{}-{}", "root", "1", tag, snapshot_num, current_date);
+    println!("Creating snapshot {}...", snapshot_name);
     run_command(
         Command::new("btrfs").args(&[
             "subvolume",
@@ -104,9 +139,7 @@ pub fn create_snapshot(subvolume_dir: &Path, tag: String) -> Result<(), String> 
             "-r",
             "/",
             subvolume_dir
-                .join(Path::new(
-                    format!("{}-{}", tag, snapshot_num).as_str(),
-                ))
+                .join(snapshot_name.as_str())
                 .to_str()
                 .unwrap_or_else(|| {
                     eprintln!("Failed to convert snapshot path to str");
