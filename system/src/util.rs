@@ -74,7 +74,7 @@ pub fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String>
 
     let snapshots: Vec<SnapshotInfo> = ls_output
         .split('\n')
-        .filter_map(|s| SnapshotInfo::from_str(s).ok())
+        .filter_map(|s| SnapshotInfo::from_str(s).map_err(|e| println!("Failed to parse snapshot info: {}", e)).ok())
         .collect();
 
     return Ok(snapshots);
