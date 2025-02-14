@@ -115,7 +115,7 @@ pub fn get_root_branch(subvolume_dir: &Path) -> Result<SnapshotInfo, String> {
 
     // Parse uuid from output
     let re = Regex::new(r"UUID:\s*([a-f0-9-]+)").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
-    let root_uuid = re.captures(&root_uuid_all).ok_or("Failed to match regex")?.get(0).ok_or(format!("Failed to get parent UUID"))?.as_str();
+    let root_uuid = re.captures(&root_uuid_all).ok_or("Failed to match regex")?.get(1).ok_or(format!("Failed to get parent UUID"))?.as_str();
 
     // If root uuid is -, then it is the core
     if root_uuid == "-" {
