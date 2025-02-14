@@ -18,10 +18,8 @@ impl SnapshotInfo {
 
         let captures = re.captures(input).ok_or("Failed to match regex")?;
 
-        println!("Captures: {:?}", captures);
-
         let path_str = captures.get(2).ok_or("Failed to get path")?.as_str();
-        let path = PathBuf::from(path_str).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", path_str, e))?;
+        let path = PathBuf::from(path_str);
         let uuid = captures.get(1).ok_or("Failed to get UUID")?.as_str().to_string();
         let root = captures.get(3).ok_or("Failed to get root name")?.as_str();
         let root_id = captures.get(4).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
@@ -77,7 +75,7 @@ pub fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String>
 
     let snapshots: Vec<SnapshotInfo> = ls_output
         .split('\n')
-        .filter_map(|s| SnapshotInfo::from_str(s).map_err(|e| println!("Failed to parse snapshot info: {}", e)).ok())
+        .filter_map(|s| SnapshotInfo::from_str(s).ok())
         .collect();
 
     return Ok(snapshots);
