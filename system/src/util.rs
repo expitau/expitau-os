@@ -62,8 +62,10 @@ pub fn check_subvolumes_mounted(subvolume_dir: &Path) -> Result<(), String> {
 
 pub fn list_snapshots(subvolume_dir: &Path) -> Result<Vec<SnapshotInfo>, String> {
     let ls_output = run_command(
-        Command::new("ls").args(&[
-            "-1",
+        Command::new("btrfs").args(&[
+            "subvolume",
+            "list",
+            "-u",
             subvolume_dir
                 .to_str()
                 .ok_or("Failed to convert subvolume directory path to str")?,
