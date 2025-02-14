@@ -24,16 +24,20 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    Test,
     /// Display the system tree
+    #[clap(aliases = &["ls", "list"])]
     Tree,
     /// Create a system snapshot
     Snapshot,
     /// Delete a system snapshot
+    #[clap(aliases = &["rm"])]
     Delete {
         /// Snapshot to delete
         snapshot_name: String,
     },
     /// Roll back to a specific snapshot
+    #[clap(aliases = &["restore", "revert"])]
     Rollback {
         /// Snapshot to rollback to, will use latest if multiple snapshots exist
         #[clap(default_value = "")]
@@ -48,7 +52,7 @@ enum Commands {
     Lock,
     /// Put the system in writable mode
     Unlock,
-    /// Rebuild the system, then switch to the new version
+    /// Rebuild the system, then switch to the new root
     Migrate {
         /// Path to the new system binary
         file: Option<String>,
@@ -59,6 +63,7 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
+        Commands::Test => handle_test(&cli),
         Commands::Tree => handle_tree(&cli),
         Commands::Snapshot => handle_snapshot(&cli),
         Commands::Rollback { snapshot_name } => handle_rollback(&cli, snapshot_name.to_string()),
@@ -68,6 +73,11 @@ fn main() {
         Commands::Lock => handle_lock(&cli),
         Commands::Unlock => handle_unlock(&cli),
     }
+}
+
+fn handle_test(cli: &Cli) {
+    println!("Test command");
+    println!("{:?}", get_root_branch(Path::new(cli.subvolume_dir.as_str())));
 }
 
 fn handle_build(_cli: &Cli) {

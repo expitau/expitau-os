@@ -3,6 +3,7 @@ use crate::*;
 #[derive(Debug)]
 pub struct SnapshotInfo {
     pub path: PathBuf,
+    pub uuid: String,
     pub root: String,
     pub root_id: u32,
     pub tag: String,
@@ -13,20 +14,22 @@ pub struct SnapshotInfo {
 impl SnapshotInfo {
     fn from_str(input: &str) -> Result<Self, String> {
         // @_arch-1-snapshot-2-20251231
-        let re = Regex::new(r"^@_([a-zA-Z\d_]+)-(\d+)-([a-zA-Z\d_]+)-(\d+)-(\d{8})$").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
+        let re = Regex::new(r"uuid ([a-z0-9-]+) path @_([a-zA-Z\d_]+)-(\d+)-([a-zA-Z\d_]+)-(\d+)-(\d{8})$").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
 
         let captures = re.captures(input).ok_or("Failed to match regex")?;
 
         let path = PathBuf::from(input).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", input, e))?;
-        let root = captures.get(1).ok_or("Failed to get root name")?.as_str();
-        let root_id = captures.get(2).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
-        let tag = captures.get(3).ok_or("Failed to get tag name")?.as_str();
-        let tag_id = captures.get(4).ok_or("Failed to get tag ID")?.as_str().parse().map_err(|e| format!("Failed to parse tag ID: {}", e))?;
-        let date = captures.get(5).ok_or("Failed to get date")?.as_str().parse().map_err(|e| format!("Failed to parse date: {}", e))?;
+        let uuid = captures.get(1).ok_or("Failed to get UUID")?.as_str().to_string();
+        let root = captures.get(2).ok_or("Failed to get root name")?.as_str();
+        let root_id = captures.get(3).ok_or("Failed to get root ID")?.as_str().parse().map_err(|e| format!("Failed to parse root ID: {}", e))?;
+        let tag = captures.get(4).ok_or("Failed to get tag name")?.as_str();
+        let tag_id = captures.get(5).ok_or("Failed to get tag ID")?.as_str().parse().map_err(|e| format!("Failed to parse tag ID: {}", e))?;
+        let date = captures.get(6).ok_or("Failed to get date")?.as_str().parse().map_err(|e| format!("Failed to parse date: {}", e))?;
 
 
         Ok(Self {
             path,
+            uuid,
             root: root.to_string(),
             root_id,
             tag: tag.to_string(),
@@ -104,7 +107,28 @@ pub fn get_snapshot_by_name(subvolume_dir: &Path, name: &str) -> Result<Snapshot
 }
 
 pub fn get_root_branch(subvolume_dir: &Path) -> Result<SnapshotInfo, String> {
-    todo!()
+    // Get uuid of parent of root (/) subvolume
+    let root_uuid_all = run_command(
+        Command::new("btrfs")
+            .args(&["subvolume", "show", "/"]),
+    )?;
+
+    // Parse uuid from output
+    let re = Regex::new(r"UUID:\s*([a-f0-9-]+)").map_err(|e| format!("Failed to execute regex on input: {}", e))?;
+    let root_uuid = re.captures(&root_uuid_all).ok_or("Failed to match regex")?.get(0).ok_or(format!("Failed to get parent UUID"))?.as_str();
+
+    // If root uuid is -, then it is the core
+    if root_uuid == "-" {
+        return Err("Root subvolume is the core".to_string());
+    }
+
+    // Get snapshot from root uuid
+    let snapshot = list_snapshots(subvolume_dir)?
+        .into_iter()
+        .find(|s| s.uuid == root_uuid)
+        .ok_or(format!("No snapshot found with root UUID {}", root_uuid))?;
+
+    return Ok(snapshot);
 }
 
 pub fn create_snapshot(subvolume_dir: &Path, tag: String) -> Result<(), String> {
