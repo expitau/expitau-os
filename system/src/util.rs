@@ -18,6 +18,8 @@ impl SnapshotInfo {
 
         let captures = re.captures(input).ok_or("Failed to match regex")?;
 
+        println!("Captures: {:?}", captures);
+
         let path = PathBuf::from(captures.get(2).ok_or("Failed to get path")?.as_str()).canonicalize().map_err(|e| format!("Failed to canonicalize snapshot path {}: {}", input, e))?;
         let uuid = captures.get(1).ok_or("Failed to get UUID")?.as_str().to_string();
         let root = captures.get(3).ok_or("Failed to get root name")?.as_str();
