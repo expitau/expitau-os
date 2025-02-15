@@ -7,6 +7,9 @@ cp /scripts/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
 cp /scripts/profile.sh /mnt
 mkdir -p /mnt/usr/share/backgrounds/gnome
 cp /scripts/Wallpaper.png /mnt/usr/share/backgrounds/gnome/chichien.png
+cp /scripts/trueline.sh /mnt/etc/profile.d/trueline.sh
+
+cp paru/ /mnt/usr/src/paru -r
 
 mkdir -p /mnt/etc/dconf/db/local.d/00-profile
 mv /scripts/dconf.conf /mnt/etc/dconf/db/local.d/00-profile
