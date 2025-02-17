@@ -25,7 +25,8 @@ mount -t sysfs /sys /mnt/sys
 mount -o bind /dev /mnt/dev
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
-chroot /mnt /bin/bash /profile.sh
+# These variables are passed in podman run with --env USER=username --env PW=password
+chroot /mnt env USER=$USER PW=$PW /bin/bash /profile.sh
 
 umount -l /mnt/var/cache/pacman/pkg
 umount -l /mnt/proc

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Set USER variable if not set, this comes from build script. Default password is not a secret
+USER=${USER:-user}
+PW=$(echo "${PW:-Y0dGemMzZHZjbVE9}" | base64 --decode)
+
 echo "Running custom install scripts..."
 pacman-key --populate archlinux
 
@@ -25,7 +29,7 @@ useradd -m -G wheel -s /bin/bash nathan
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo "source /etc/profile.d/trueline.sh" >> /home/nathan/.bashrc
 
-echo "nathan:test" | chpasswd
+echo "$USER:$PW" | chpasswd
 pacman -S --noconfirm \
     btrfs-progs squashfs-tools cargo rust \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-docs gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
@@ -56,3 +60,6 @@ chmod -R 755 /root/.local/share/gnome-shell/extensions/*
 chown -R root:root /root/.local/share/gnome-shell/extensions/*
 mv /root/.local/share/gnome-shell/extensions/* /usr/share/gnome-shell/extensions
 rm -r /root/extensions
+
+# System links
+ln -s /home/$USER/Documents /home/$USER/Data/Documents

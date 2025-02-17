@@ -9,10 +9,11 @@ RUN rustup default stable
 RUN git clone https://aur.archlinux.org/paru-bin.git /paru && chown -R nobody:nobody /paru && cd /paru && sudo -u nobody makepkg --noconfirm
 
 RUN echo "root:0:1000" >> /etc/subuid && echo "root:0:1000" >> /etc/subgid
-COPY scripts /scripts
 
 COPY system/Cargo.toml system/Cargo.lock /src/
 COPY system/src /src/src
 RUN cd /src && cargo build --release
 
-CMD [ "bash", "scripts/build.sh" ] 
+COPY scripts /scripts
+
+CMD bash scripts/build.sh
