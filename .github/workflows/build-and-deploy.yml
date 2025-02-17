@@ -29,8 +29,8 @@ jobs:
       
       - name: Build artifact
         env:
-          USER: {{ secrets.USER }}
-          PW: {{ secrets.PW }}
+          USER: ${{ secrets.USER }}
+          PW: ${{ secrets.PW }}
         run: |
           podman run --cap-add SYS_ADMIN --security-opt unmask=/proc/* --security-opt label=disable -v ./cache:/var/cache/pacman/pkg --env USER=$USER --env PW=$PW --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
