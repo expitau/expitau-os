@@ -25,9 +25,9 @@ systemctl enable systemd-timesyncd
 pacman -S --noconfirm podman fuse-overlayfs
 
 # Set up users
-useradd -m -G wheel -s /bin/bash nathan
+useradd -m -G wheel -s /bin/bash $USER
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-echo "source /etc/profile.d/trueline.sh" >> /home/nathan/.bashrc
+echo "source /etc/profile.d/trueline.sh" >> /home/$USER/.bashrc
 
 echo "$USER:$PW" | chpasswd
 pacman -S --noconfirm \
@@ -62,4 +62,23 @@ mv /root/.local/share/gnome-shell/extensions/* /usr/share/gnome-shell/extensions
 rm -r /root/extensions
 
 # System links
-ln -s /home/$USER/Documents /home/$USER/Data/Documents
+ls /home/$USER
+ln -s /home/$USER/Data/Documents /home/$USER/Documents
+ln -s /home/$USER/Data/Games /home/$USER/Games
+ln -s /home/$USER/Data/Music /home/$USER/Music
+ln -s /home/$USER/Data/Scripts /home/$USER/Scripts
+ln -s /home/$USER/Data/Pictures /home/$USER/Pictures
+ln -s /home/$USER/Data/Videos /home/$USER/Videos
+
+mkdir -p /home/$USER/.config/StardewValley
+ln -s /home/$USER/Games/Stardew\ Valley /home/$USER/.config/StardewValley/Saves
+mkdir -p /home/$USER/.config/unity3d/Klei
+ln -s /home/$USER/Games/Oxygen\ Not\ Included /home/$USER/.config/unity3d/Klei/OxygenNotIncluded
+mkdir -p /home/$USER/.config/unity3d/Team\ Cherry
+ln -s /home/$USER/Games/Hollow\ Knight /home/$USER/.config/unity3d/Team\ Cherry/Hollow\ Knight
+mkdir -p /home/$USER/.local/share
+ln -s /home/$USER/Games/Terraria /home/$USER/.local/share/Terraria
+mkdir -p /home/$USER
+ln -s /home/$USER/Games/Factorio /home/$USER/.factorio
+mkdir -p /home/$USER/.local/share/Steam/steamapps/common/Cuphead
+ln -s /home/$USER/Games/Cuphead /home/$USER/.local/share/Steam/steamapps/common/Cuphead/Saves
