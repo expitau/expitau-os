@@ -12,6 +12,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Pacman Dependencies
+        id: cache-pacman-deps
+        uses: actions/cache@v4
+        with:
+          path: cache
+          key: ${{ runner.os }}-cache-pacman-deps
+
       # Set up Podman
       - name: Set up Podman
         run: |
