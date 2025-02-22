@@ -32,7 +32,7 @@ echo "source /etc/profile.d/trueline.sh" >> /home/$USER/.bashrc
 echo "$USER:$PW" | chpasswd
 pacman -S --noconfirm \
     btrfs-progs squashfs-tools cargo rust \
-    baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-docs gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
+    baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
     firefox discord steam noto-fonts nvidia-utils lib32-nvidia-utils pika-backup ttf-firacode-nerd mission-center krita obsidian
 systemctl enable gdm
 
@@ -62,7 +62,8 @@ mv /root/.local/share/gnome-shell/extensions/* /usr/share/gnome-shell/extensions
 rm -r /root/extensions
 
 # System links
-ls /home/$USER
+mkdir -p /home/$USER/Data
+
 ln -s /home/$USER/Data/Documents /home/$USER/Documents
 ln -s /home/$USER/Data/Games /home/$USER/Games
 ln -s /home/$USER/Data/Music /home/$USER/Music
@@ -82,3 +83,16 @@ mkdir -p /home/$USER
 ln -s /home/$USER/Games/Factorio /home/$USER/.factorio
 mkdir -p /home/$USER/.local/share/Steam/steamapps/common/Cuphead
 ln -s /home/$USER/Games/Cuphead /home/$USER/.local/share/Steam/steamapps/common/Cuphead/Saves
+
+mkdir -p /home/$USER/.config
+ln -s /home/$USER/Data/AppData/vscode /home/$USER/.config/Code
+ln -s /home/$USER/Data/AppData/discord /home/$USER/.config/discord
+ln -s /home/$USER/Data/AppData/firefox /home/$USER/.mozilla
+
+# Hide extra desktop entries
+sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/avahi-discover.desktop > /home/$USER/.local/share/applications/avahi-discover.desktop
+sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/bssh.desktop > /home/$USER/.local/share/applications/bssh.desktop
+sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/bvnc.desktop > /home/$USER/.local/share/applications/bvnc.desktop
+sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/electron32.desktop > /home/$USER/.local/share/applications/electron32.desktop
+sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/qv4l2.desktop > /home/$USER/.local/share/applications/qv4l2.desktop
+sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/qvidcap.desktop > /home/$USER/.local/share/applications/qvidcap.desktop
