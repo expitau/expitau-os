@@ -88,6 +88,11 @@ mkdir -p /home/$USER/.config
 ln -s /home/$USER/Data/AppData/vscode /home/$USER/.config/Code
 ln -s /home/$USER/Data/AppData/discord /home/$USER/.config/discord
 ln -s /home/$USER/Data/AppData/firefox /home/$USER/.mozilla
+ln -s /home/$USER/Data/AppData/obsidian /home/$USER/.config/obsidian
+mkdir -p /home/$USER/.local/share
+ln -s /home/$USER/Data/AppData/steam /home/$USER/.local/share/.steam
+
+ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
 # Hide extra desktop entries
 sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/avahi-discover.desktop > /home/$USER/.local/share/applications/avahi-discover.desktop
