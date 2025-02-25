@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
 
 podman build -t archbuild .
 # The environment variables are set in the host

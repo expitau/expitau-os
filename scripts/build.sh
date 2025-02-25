@@ -1,7 +1,7 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
 
-pacstrap -cKNP /mnt base base-devel linux linux-firmware grub efibootmgr nano git networkmanager wget
+pacstrap -cKNP /mnt base base-devel linux linux-firmware git networkmanager wget
 
 cp /scripts/config/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
 mkdir -p /mnt/usr/share/backgrounds/gnome
@@ -21,6 +21,7 @@ cp -R /var/cache/pacman/pkg/* /mnt/var/cache/pacman/pkg
 mount -t proc /proc /mnt/proc
 mount -t sysfs /sys /mnt/sys
 mount -o bind /dev /mnt/dev
+cp /scripts/profile.sh /mnt/profile.sh
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
 # These variables are passed in podman run with --env USER=username --env PW=password
@@ -30,5 +31,6 @@ cp -R /mnt/var/cache/pacman/pkg/* /var/cache/pacman/pkg
 umount -l /mnt/proc
 umount -l /mnt/sys
 umount -l /mnt/dev
+rm /mnt/profile.sh
 
 mksquashfs /mnt /arch.sqfs

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
 
 # Set USER variable if not set, this comes from build script. Default password is not a secret
 USER=${USER:-user}
@@ -33,7 +33,8 @@ echo "$USER:$PW" | chpasswd
 pacman -S --noconfirm \
     btrfs-progs squashfs-tools cargo rust \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
-    firefox discord steam noto-fonts nvidia-utils lib32-nvidia-utils pika-backup ttf-firacode-nerd mission-center krita obsidian
+    rustup reflector nano nvidia-utils lib32-nvidia-utils noto-fonts ttf-firacode-nerd \
+    firefox discord steam pika-backup mission-center krita obsidian
 systemctl enable gdm
 
 # Gnome extensions
@@ -95,9 +96,10 @@ ln -s /home/$USER/Data/AppData/steam /home/$USER/.local/share/.steam
 ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
 # Hide extra desktop entries
+mkdir -p /home/$USER/.local/share/applications
 sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/avahi-discover.desktop > /home/$USER/.local/share/applications/avahi-discover.desktop
 sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/bssh.desktop > /home/$USER/.local/share/applications/bssh.desktop
 sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/bvnc.desktop > /home/$USER/.local/share/applications/bvnc.desktop
-sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/electron32.desktop > /home/$USER/.local/share/applications/electron32.desktop
+# sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/electron32.desktop > /home/$USER/.local/share/applications/electron32.desktop
 sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/qv4l2.desktop > /home/$USER/.local/share/applications/qv4l2.desktop
 sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/qvidcap.desktop > /home/$USER/.local/share/applications/qvidcap.desktop
