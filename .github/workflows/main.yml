@@ -1,0 +1,16 @@
+name: Echo Base64 Secret
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  echo-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Base64 Encode and Echo Secret
+        run: |
+          echo "Encoded secret:"
+          echo -n "${{ secrets.PW }}" | base64
