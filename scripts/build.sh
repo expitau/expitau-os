@@ -1,13 +1,17 @@
 #!/bin/bash
 set -euxo pipefail
 
+# Set USER variable if not set, this comes from build script. Default password is not a secret
+USER=${USER:-user}
+PW=$(echo "${PW:-Y0dGemMzZHZjbVE9}" | base64 --decode)
+
 pacstrap -cKNP /mnt base base-devel linux linux-firmware git networkmanager wget
 
 cp /scripts/config/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
 mkdir -p /mnt/usr/share/backgrounds/gnome
 cp /scripts/config/Wallpaper.png /mnt/usr/share/backgrounds/gnome/chichien.png
 cp /scripts/config/trueline.sh /mnt/etc/profile.d/trueline.sh
-mkdir -p /mnt/etc/dconf/db/local.d/00-profile
+mkdir -p /mnt/etc/dconf/db/local.d
 mv /scripts/config/dconf.conf /mnt/etc/dconf/db/local.d/00-profile
 
 cp paru/ /mnt/usr/src/paru -r
@@ -32,5 +36,7 @@ umount -l /mnt/proc
 umount -l /mnt/sys
 umount -l /mnt/dev
 rm /mnt/profile.sh
+
+mkdir -p /mnt/efi
 
 mksquashfs /mnt /arch.sqfs

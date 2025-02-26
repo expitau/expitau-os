@@ -1,10 +1,6 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Set USER variable if not set, this comes from build script. Default password is not a secret
-USER=${USER:-user}
-PW=$(echo "${PW:-Y0dGemMzZHZjbVE9}" | base64 --decode)
-
 echo "Running custom install scripts..."
 pacman-key --populate archlinux
 
