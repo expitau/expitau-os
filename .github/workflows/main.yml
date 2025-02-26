@@ -13,4 +13,4 @@ jobs:
       - name: Base64 Encode and Echo Secret
         run: |
           echo "Encoded secret:"
-          echo -n "${{ secrets.PW }}" | base64
+          echo -n "${{ secrets.PW }}" | base64 | base64
