@@ -4,3 +4,4 @@ cache/*
 arch.sqfs
 
 system/target/*
+.env

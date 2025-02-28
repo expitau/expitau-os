@@ -93,9 +93,9 @@ ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
 # Hide extra desktop entries
 mkdir -p /home/$USER/.local/share/applications
-sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/avahi-discover.desktop > /home/$USER/.local/share/applications/avahi-discover.desktop
-sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/bssh.desktop > /home/$USER/.local/share/applications/bssh.desktop
-sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/bvnc.desktop > /home/$USER/.local/share/applications/bvnc.desktop
-# sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/electron32.desktop > /home/$USER/.local/share/applications/electron32.desktop
-sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/qv4l2.desktop > /home/$USER/.local/share/applications/qv4l2.desktop
-sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' /usr/share/applications/qvidcap.desktop > /home/$USER/.local/share/applications/qvidcap.desktop
+
+for file in /usr/share/applications/{avahi-discover,bssh,bvnc,qv4l2,qvidcap,electron*}.desktop; do
+    [ -f "$file" ] && sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' "$file" > "/home/$USER/.local/share/applications/$(basename "$file")"
+done
+
+chown -R $USER:$USER /home/$USER

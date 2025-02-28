@@ -20,6 +20,7 @@ impl Snapshot {
 }
 
 pub fn run(command: &mut Command) -> Result<String, String> {
+    println!("Running command {:?}", command);
     let output = command.output().map_err(|e| {
         format!(
             "Failed to execute {}: {}",
@@ -41,9 +42,10 @@ pub fn run(command: &mut Command) -> Result<String, String> {
 
 #[macro_export]
 macro_rules! command {
-    ($cmd:expr $(, $arg:expr)*) => {{
-        use std::process::Command;
-        
-        Command::new($cmd).args(&[$($arg),*])
-    }};
+    ($cmd:expr) => {
+        &mut std::process::Command::new($cmd)
+    };
+    ($cmd:expr, $($args:expr),+) => {
+        &mut std::process::Command::new($cmd).args(&[$($args),+])
+    };
 }

@@ -14,6 +14,10 @@ struct Cli {
     #[clap(long, default_value = "/mnt")]
     subvolume_dir: String,
 
+    /// Build directory
+    #[clap(long, default_value = "/usr/src/system")]
+    build_dir: String,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -23,7 +27,9 @@ enum Commands {
     /// Show the status of the system
     Status,
     /// Create a new snapshot
-    Snapshot,
+    Snapshot {
+        id: String,
+    },
     /// Delete a snapshot
     Delete {
         /// ID of the snapshot to delete
@@ -51,7 +57,12 @@ enum Commands {
 
 impl Cli {
     fn get_subvolume_dir(&self) -> Result<PathBuf, String> {
-        let subvolume_path = Path::new(&self.subvolume_dir);
+        let subvolume_path = Path::new(&self.subvolume_dir).canonicalize().map_err(|e| {
+            format!(
+                "Failed to canonicalize subvolume directory {}: {}",
+                self.subvolume_dir, e
+            )
+        })?;
 
         // Get output of findmnt command
         let findmnt_output = util::run(command!(
@@ -79,6 +90,26 @@ impl Cli {
                 .ok_or("Could not convert subvolume dir to string")?
         ));
     }
+
+    fn get_build_dir(&self) -> Result<PathBuf, String> {
+        let build_path = Path::new(&self.build_dir).canonicalize().map_err(|e| {
+            format!(
+                "Failed to canonicalize build directory {}: {}",
+                self.build_dir, e
+            )
+        })?;
+
+        if !build_path.exists() {
+            return Err(format!(
+                "Build directory {} does not exist",
+                build_path
+                    .to_str()
+                    .ok_or("Could not convert build dir to string")?
+            ));
+        }
+
+        Ok(build_path.to_path_buf())
+    }
 }
 
 fn main() {
@@ -86,7 +117,7 @@ fn main() {
 
     let result = match &cli.command {
         Commands::Status => command::status(&cli),
-        Commands::Snapshot => command::snapshot(&cli),
+        Commands::Snapshot { id } => command::snapshot(&cli, id.to_string()),
         Commands::Delete { id } => command::delete(&cli, id.to_string()),
         Commands::Rollback { id } => command::rollback(&cli, id.to_string()),
         Commands::Lock => command::lock(&cli),
