@@ -1,4 +1,3 @@
-use std::fmt::format;
 use std::path::PathBuf;
 
 use crate::command;
@@ -86,7 +85,7 @@ pub fn build(cli: &Cli) -> Result<(), String> {
     }).expect("Error setting Ctrl+C handler");
 
     println!("Loading {:?} file", cli.get_build_dir()?.join(".env"));
-    dotenv::from_filename(cli.get_build_dir()?.join(".env")).map_err(|_| "Failed to load .env file")?;
+    dotenv::from_filename(cli.get_build_dir()?.join(".env")).map_err(|_| "Failed to load .env file").ok();
 
     let user = std::env::var("USER").map_err(|_| format!("USER variable not set"))?;
     let pw = std::env::var("PW").map_err(|_| format!("PW variable not set"))?;

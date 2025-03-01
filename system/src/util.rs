@@ -1,23 +1,4 @@
-use std::{path::PathBuf, process::Command};
-
-pub struct Snapshot {
-    pub path: PathBuf,
-    pub parent_id: Option<u32>,
-    pub id: u32,
-}
-
-impl Snapshot {
-    pub fn from_str(s: &str) -> Result<Self, String> {
-        let parts: Vec<&str> = s.split('-').collect();
-
-        // If does not start with @- or does not have 3 parts, return error
-        if !s.starts_with("@-") || parts.len() != 3 {
-            return Err(format!("Invalid snapshot string: {}", s));
-        }
-
-        todo!("Implement Snapshot::from_str")
-    }
-}
+use std::process::Command;
 
 pub fn run(command: &mut Command) -> Result<String, String> {
     println!("Running command {:?}", command);
