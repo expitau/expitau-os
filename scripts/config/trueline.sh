@@ -1,4 +1,4 @@
-if [[ "$(tty) == /dev/tty*" ]] || [[ ! $- == *i* ]]; then
+if [[ $(tty) == /dev/tty* ]] || [[ ! $- == *i* ]]; then
     return
 fi
 
