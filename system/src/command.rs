@@ -155,7 +155,7 @@ pub fn unlock(_cli: &Cli) -> Result<(), String> {
 }
 
 pub fn rebase(cli: &Cli, id: String, image_path: &Option<PathBuf>) -> Result<(), String> {
-    let canonicalized_path = match image_path {
+    let full_image_path = match image_path {
         Some(path) => path
             .canonicalize()
             .map_err(|e| format!("Failed to canonicalize image path: {}", e))?,
@@ -164,13 +164,22 @@ pub fn rebase(cli: &Cli, id: String, image_path: &Option<PathBuf>) -> Result<(),
         }
     };
 
-    println!("Rebasing {:?} to new branch {}", canonicalized_path, id);
+    let full_subvolume_path = cli.get_subvolume_dir()?.join(&id);
+
+    println!("Rebasing {:?} to new branch {}", full_image_path, id);
 
     util::run(command!(
         "btrfs",
         "subvolume",
         "create",
-        &cli.get_subvolume_dir()?.join(&id).to_string_lossy()
+        full_subvolume_path.to_string_lossy().as_ref()
+    ))?;
+
+    util::run(command!(
+        "unsquashfs",
+        "-d",
+        full_subvolume_path.to_string_lossy().as_ref(),
+        full_image_path.to_string_lossy().as_ref()
     ))?;
 
     Ok(())
