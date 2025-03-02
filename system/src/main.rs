@@ -18,6 +18,10 @@ struct Cli {
     #[clap(long, default_value = "/usr/src/system")]
     build_dir: String,
 
+    /// EFI directory
+    #[clap(long, default_value = "./efi")]
+    efi_dir: String,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -26,10 +30,12 @@ struct Cli {
 enum Commands {
     /// Show the status of the system
     Status,
+    /// Create a boot entry for the specified system
+    Pin { id: String },
+    /// Remove a boot entry for the specified system
+    Unpin { id: String },
     /// Create a new snapshot
-    Snapshot {
-        id: String,
-    },
+    Snapshot { id: String },
     /// Delete a snapshot
     Delete {
         /// ID of the snapshot to delete
@@ -53,6 +59,8 @@ enum Commands {
         /// Path to the new system image (use local build if not provided)
         image_path: Option<PathBuf>,
     },
+    /// Update the kernel in the EFI directory
+    UpdateKernel,
 }
 
 impl Cli {
@@ -74,6 +82,7 @@ impl Cli {
             "-o",
             "target,fstype"
         ))?;
+
         // Get each line of output and check if subvolume directory is mounted
         let lines: Vec<&str> = findmnt_output.split('\n').collect();
 
@@ -110,12 +119,34 @@ impl Cli {
 
         Ok(build_path.to_path_buf())
     }
+
+    fn get_efi_dir(&self) -> Result<PathBuf, String> {
+        let efi_path = Path::new(&self.efi_dir).canonicalize().map_err(|e| {
+            format!(
+                "Failed to canonicalize EFI directory {}: {}",
+                self.efi_dir, e
+            )
+        })?;
+
+        if !efi_path.exists() {
+            return Err(format!(
+                "EFI directory {} does not exist",
+                efi_path
+                    .to_str()
+                    .ok_or("Could not convert EFI dir to string")?
+            ));
+        }
+
+        Ok(efi_path.to_path_buf())
+    }
 }
 
 fn main() {
     let cli = Cli::parse();
 
     let result = match &cli.command {
+        Commands::Pin { id } => command::pin(&cli, id.to_string()),
+        Commands::Unpin { id } => command::unpin(&cli, id.to_string()),
         Commands::Status => command::status(&cli),
         Commands::Snapshot { id } => command::snapshot(&cli, id.to_string()),
         Commands::Delete { id } => command::delete(&cli, id.to_string()),
@@ -127,6 +158,7 @@ fn main() {
             branch_name,
             image_path,
         } => command::rebase(&cli, branch_name.to_string(), image_path),
+        Commands::UpdateKernel => command::update_kernel(&cli),
     };
 
     if let Err(e) = result {
