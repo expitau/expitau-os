@@ -11,6 +11,9 @@ pacstrap -cKNP /mnt base base-devel linux linux-firmware git networkmanager wget
 # Configure mkinitcpio to generate UKI images
 cp /scripts/config/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
 
+# Copy fstab
+cp /scripts/config/fstab /mnt/etc/fstab
+
 # Copy desktop wallpaper
 mkdir -p /mnt/usr/share/backgrounds/gnome
 cp /scripts/config/wallpaper.png /mnt/usr/share/backgrounds/gnome/wallpaper.png

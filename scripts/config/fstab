@@ -1,0 +1,6 @@
+# Static information about the filesystem
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+LABEL=ARCH_BOOT /efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2
+LABEL=ARCH_ROOT /data btrfs defaults,rw,relatime,subvol=/data 0 0
