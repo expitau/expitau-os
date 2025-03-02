@@ -1,8 +1,6 @@
 #!/bin/bash
 set -euxo pipefail
 
-alias pacman='pacman --noconfirm'
-
 # === 1. Update system, install packages === #
 
 # Enable multilib for steam
@@ -14,14 +12,14 @@ EOF
 
 # Update system
 pacman-key --populate archlinux
-pacman -Syyu
+pacman -Syyu --noconfirm
 
 # Install AUR helper paru
 shopt -s extglob # 
-pacman -U /usr/src/paru/paru-bin-!(d*).pkg.tar.zst
+pacman -U --noconfirm /usr/src/paru/paru-bin-!(d*).pkg.tar.zst
 
 # Install gnome, system utilities, and apps
-pacman -S \
+pacman -S --noconfirm \
     btrfs-progs squashfs-tools cargo rust \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
     podman fuse-overlayfs rustup reflector nano nvidia-utils lib32-nvidia-utils noto-fonts ttf-firacode-nerd \
