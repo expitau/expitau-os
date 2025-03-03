@@ -115,6 +115,8 @@ ln -s /home/$USER/Data/AppData/steam /home/$USER/.local/share/.steam
 rm -r /usr/src/system/cache
 ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
+pacman -Sc --noconfirm
+
 # Fix home directory permissions
 chown -R $USER:$USER /home/$USER
 chown -R $USER:$USER /var/data
