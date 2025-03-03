@@ -53,6 +53,7 @@ jobs:
 
       - name: Create Tag
         run: |
+          git pull
           TAG=$(date +'%y.%m.%d-%H%M%S')
           echo TAG=$TAG >> $GITHUB_ENV
           git config --global user.name "github-actions[bot]"
