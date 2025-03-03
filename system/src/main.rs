@@ -19,7 +19,7 @@ struct Cli {
     build_dir: String,
 
     /// EFI directory
-    #[clap(long, default_value = "./efi")]
+    #[clap(long, default_value = "/efi")]
     efi_dir: String,
 
     #[command(subcommand)]

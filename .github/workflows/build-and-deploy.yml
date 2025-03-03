@@ -43,8 +43,13 @@ jobs:
           podman cp archbuild:/arch.sqfs .
 
           podman rm archbuild
+
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
+
+          sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
+
+          echo "Successfully built artifact"
       
       - name: Create release
         uses: softprops/action-gh-release@v2

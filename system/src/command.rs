@@ -68,8 +68,6 @@ pub fn status(cli: &Cli) -> Result<(), String> {
         );
     }
 
-    println!("Snapshots: {}", snapshots);
-
     Ok(())
 }
 
@@ -270,10 +268,10 @@ pub fn pin(cli: &Cli, id: String) -> Result<(), String> {
     }
 
     let template = include_str!("./entry.conf")
-        .replace("{{title}}", "Arch Linux (default)")
+        .replace("{{title}}", format!("Arch Linux ({})", &id).as_str())
         .replace("{{efi_path}}", "/EFI/Arch/arch-linux.efi")
         .replace("{{root_label}}", "ARCH_ROOT")
-        .replace("{{root_options}}", "@");
+        .replace("{{root_options}}", format!("subvol={}", &id).as_str());
 
     println!("{}", template);
 

@@ -36,7 +36,7 @@ pub fn get_current_id(subvolume_path: &PathBuf) -> Result<String, String> {
         "btrfs",
         "subvolume",
         "show",
-        subvolume_path.to_string_lossy().as_ref()
+        "/"
     ))?;
 
     let id_line = output
