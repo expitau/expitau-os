@@ -57,7 +57,7 @@ enum Commands {
         /// Unique name for this branch
         branch_name: String,
         /// Path to the new system image (use local build if not provided)
-        image_path: Option<PathBuf>,
+        image_path: Option<String>,
     },
     /// Update the kernel in the EFI directory
     UpdateKernel,

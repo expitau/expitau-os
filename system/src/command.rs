@@ -41,8 +41,8 @@ pub fn status(cli: &Cli) -> Result<(), String> {
         .last()
         .ok_or("Could not get default subvolume")?
         .trim();
-    
-    let current = util::get_current_id(&subvolume_dir)?;
+
+    let current = util::get_current_id()?;
 
     // For each snapshot
     for snapshot in snapshots.lines() {
@@ -107,66 +107,52 @@ pub fn delete(cli: &Cli, id: String) -> Result<(), String> {
 
 pub fn rollback(cli: &Cli, id: String) -> Result<(), String> {
     // Rollback
-    // 1. If root is mounted as /mnt/@, move it to /mnt/@_tmp (delete /mnt/@_tmp if exists)
-    // 2. Delete /mnt/@ if it exists
-    // 3. Copy /mnt/@<snapshot> to /mnt/@
+    // 1. Set default subvolume
+    // 2. Copy EFI files
 
     let subvolume_dir = cli.get_subvolume_dir()?;
+    let efi_dir = cli.get_efi_dir()?;
     let snapshot_path = subvolume_dir.join(&id);
 
-    let root_path = subvolume_dir.join("@");
-    let root_tmp_path = subvolume_dir.join("@_tmp");
-    let rollback_path = subvolume_dir.join(format!(
-        "@rollback-{}-{}",
-        id,
-        chrono::Local::now().format("%Y%m%d%H%M%S")
-    ));
-
     util::run(command!(
         "btrfs",
         "subvolume",
-        "snapshot",
-        root_path.to_string_lossy().as_ref(),
-        rollback_path.to_string_lossy().as_ref()
+        "set-default",
+        snapshot_path.to_string_lossy().as_ref()
     ))?;
 
-    let findmnt_output = util::run(command!(
-        "findmnt",
-        "-T",
-        root_path.to_string_lossy().as_ref(),
-        "-o",
-        "target,fstype"
-    ))?;
-    let lines: Vec<&str> = findmnt_output.split('\n').collect();
-    let root_mounted_as_tmp = lines.iter().any(|line| line.contains("/@_tmp"));
+    let kernel_path = PathBuf::from("usr/lib/kernel/arch-linux.efi");
+    let kernel_dest = efi_dir.join("EFI/Arch").join("arch-linux.efi");
 
-    if root_path.exists() {
-        if root_mounted_as_tmp {
-            println!("Root is mounted as @_tmp, deleting /mnt/@");
-            util::run(command!(
-                "btrfs",
-                "subvolume",
-                "delete",
-                root_path.to_string_lossy().as_ref()
-            ))?;
-        } else {
-            println!("Root is not mounted as @_tmp, moving /mnt/@ to /mnt/@_tmp");
-            util::run(command!(
-                "mv",
-                root_path.to_string_lossy().as_ref(),
-                root_tmp_path.to_string_lossy().as_ref()
-            ))?;
-        }
-    }
-
-    // Now root_path does not exist, we can snapshot the rollback
     util::run(command!(
-        "btrfs",
-        "subvolume",
-        "snapshot",
-        snapshot_path.to_string_lossy().as_ref(),
-        root_path.to_string_lossy().as_ref()
-    ))?;
+        "chattr",
+        "-i",
+        kernel_dest.to_string_lossy().as_ref()
+    )).map_err(|e| {
+        format!(
+            "Failed to remove immutable flag from kernel: {}\nWARNING: Default subvolume has incorrect kernel",
+            e
+        )
+    })?;
+
+    std::fs::copy(snapshot_path.join(&kernel_path), &kernel_dest).map_err(|e| {
+        format!(
+            "Failed to copy kernel to boot directory: {}\nWARNING: Kernel image not immutable\nWARNING:Default subvolume has incorrect kernel",
+            e
+        )
+    })?;
+
+    util::run(command!(
+        "chattr",
+        "+i",
+        kernel_dest.to_string_lossy().as_ref()
+    ))
+    .map_err(|e| {
+        format!(
+            "Failed to set immutable flag on kernel: {}\nWARNING: Kernel image not immutable",
+            e
+        )
+    })?;
 
     Ok(())
 }
@@ -309,9 +295,9 @@ pub fn unpin(cli: &Cli, id: String) -> Result<(), String> {
     Ok(())
 }
 
-pub fn rebase(cli: &Cli, id: String, image_path: &Option<PathBuf>) -> Result<(), String> {
+pub fn rebase(cli: &Cli, id: String, image_path: &Option<String>) -> Result<(), String> {
     let full_image_path = match image_path {
-        Some(path) => path
+        Some(path) => std::path::Path::new(path)
             .canonicalize()
             .map_err(|e| format!("Failed to canonicalize image path: {}", e))?,
         None => {

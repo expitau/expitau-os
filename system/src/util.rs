@@ -1,4 +1,4 @@
-use std::{path::PathBuf, process::Command};
+use std::process::Command;
 
 pub fn run(command: &mut Command) -> Result<String, String> {
     println!("Running command {:?}", command);
@@ -31,7 +31,7 @@ macro_rules! command {
     };
 }
 
-pub fn get_current_id(subvolume_path: &PathBuf) -> Result<String, String> {
+pub fn get_current_id() -> Result<String, String> {
     let output = run(command!(
         "btrfs",
         "subvolume",
