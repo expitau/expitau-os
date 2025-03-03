@@ -190,8 +190,8 @@ pub fn build(cli: &Cli) -> Result<(), String> {
         .map_err(|_| "Failed to load .env file")
         .ok();
 
-    let user = std::env::var("USER").map_err(|_| format!("USER variable not set"))?;
-    let pw = std::env::var("PW").map_err(|_| format!("PW variable not set"))?;
+    let user = std::env::var("SYSTEM_USER").map_err(|_| format!("USER variable not set"))?;
+    let pw = std::env::var("SYSTEM_PW").map_err(|_| format!("PW variable not set"))?;
 
     // command!("ls", "-la").stdout(std::process::Stdio::inherit()).status().map_err(|e| format!("Failed to build: {}", e))?.success().then(|| 0).ok_or("Failed to build")?;
     util::run(
