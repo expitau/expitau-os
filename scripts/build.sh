@@ -6,7 +6,7 @@ USER=${USER:-user}
 PW=$(echo "${PW:-cGFzc3dvcmQ=}" | base64 --decode)
 
 # Install base system and packages required for setup (remaining packages will be installed as part of setup)
-pacstrap -cKNP /mnt base base-devel linux linux-firmware sof-firmware git networkmanager wget
+pacstrap -cKNP /mnt base base-devel linux linux-firmware linux-headers sof-firmware git networkmanager wget
 
 # Configure mkinitcpio to generate UKI images
 cp /scripts/config/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
