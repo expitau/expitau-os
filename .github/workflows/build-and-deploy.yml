@@ -59,6 +59,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag ${{ env.TAG }}
           git push origin ${{ env.TAG }}
+          mkdir dist
           echo "TESTING" > dist/helloworld.txt
       
       - name: Create release
