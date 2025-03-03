@@ -20,15 +20,17 @@ pacman -U --noconfirm /usr/src/paru/paru-bin-!(d*).pkg.tar.zst
 
 # Install gnome, system utilities, and apps
 pacman -S --noconfirm \
-    btrfs-progs squashfs-tools cargo rust \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
-    podman fuse-overlayfs rustup reflector nano nvidia-utils lib32-nvidia-utils noto-fonts ttf-firacode-nerd bluez bluez-utils \
+    btrfs-progs squashfs-tools rust podman fuse-overlayfs reflector nano noto-fonts ttf-firacode-nerd bluez bluez-utils inotify-tools fastfetch \
+    nvidia-open-dkms nvidia-utils lib32-nvidia-utils apparmor nftables intel-ucode \
     firefox discord steam pika-backup mission-center krita obsidian
 
 # Enable system services
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
 systemctl enable bluetooth
+systemctl enable apparmor
+systemctl enable nftables
 systemctl enable gdm
 
 # === 2. Setup user account === #

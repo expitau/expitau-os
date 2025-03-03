@@ -10,6 +10,7 @@ pacstrap -cKNP /mnt base base-devel linux linux-firmware sof-firmware git networ
 
 # Configure mkinitcpio to generate UKI images
 cp /scripts/config/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
+cp /scripts/config/mkinitcpio.conf /mnt/etc/mkinitcpio.conf
 
 # Copy fstab
 cp /scripts/config/fstab /mnt/etc/fstab

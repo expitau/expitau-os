@@ -195,7 +195,7 @@ pub fn build(cli: &Cli) -> Result<(), String> {
 
     // command!("ls", "-la").stdout(std::process::Stdio::inherit()).status().map_err(|e| format!("Failed to build: {}", e))?.success().then(|| 0).ok_or("Failed to build")?;
     util::run(
-        command!("podman", "build", "-t", "archbuild", ".")
+        command!("podman", "build", "--no-cache", "-t", "archbuild", ".")
             .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
             .stdout(std::process::Stdio::inherit()),
     )?;
