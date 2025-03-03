@@ -17,7 +17,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: cache
-          key: ${{ runner.os }}-cache-pacman-deps
+          key: ${{ runner.os }}-cache-pacman-deps-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-cache-pacman-deps-${{ github.ref_name }}
+            ${{ runner.os }}-cache-pacman-deps
 
       # Set up Podman
       - name: Set up Podman
