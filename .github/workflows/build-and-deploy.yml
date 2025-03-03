@@ -53,8 +53,18 @@ jobs:
           sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
 
           echo "Successfully built artifact"
+
+      - name: Create Tag
+        run: |
+          TAG=$(date +'%Y%m%d-%H%M%S')
+          echo TAG=$TAG >> $GITHUB_ENV
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ env.TAG }}
+          git push origin ${{ env.TAG }}
       
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG }}
           files: dist/*
