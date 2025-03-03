@@ -17,42 +17,39 @@ jobs:
         uses: actions/cache@v4
         with:
           path: cache
-          key: ${{ runner.os }}-cache-pacman-deps-${{ github.ref_name }}
-          restore-keys: |
-            ${{ runner.os }}-cache-pacman-deps-${{ github.ref_name }}
-            ${{ runner.os }}-cache-pacman-deps
+          key: cache-pacman-deps
 
-      # Set up Podman
-      - name: Set up Podman
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y podman
+      # # Set up Podman
+      # - name: Set up Podman
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y podman
       
-      - name: Build Rust project
-        run: |
-          cd system && cargo build --release && cd -
+      # - name: Build Rust project
+      #   run: |
+      #     cd system && cargo build --release && cd -
 
-      # Build the Docker image using Podman
-      - name: Build Docker image
-        run: |
-          podman build -t archbuild:latest .
+      # # Build the Docker image using Podman
+      # - name: Build Docker image
+      #   run: |
+      #     podman build -t archbuild:latest .
       
-      - name: Build artifact
-        env:
-          SYSTEM_USER: ${{ vars.SYSTEM_USER }}
-          SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
-        run: |
-          podman run --cap-add SYS_ADMIN --security-opt unmask=/proc/* --security-opt label=disable -v ./cache:/var/cache/pacman/pkg --env USER=$USER --env PW=$PW --name archbuild --replace archbuild
-          podman cp archbuild:/arch.sqfs .
+      # - name: Build artifact
+      #   env:
+      #     SYSTEM_USER: ${{ vars.SYSTEM_USER }}
+      #     SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
+      #   run: |
+      #     podman run --cap-add SYS_ADMIN --security-opt unmask=/proc/* --security-opt label=disable -v ./cache:/var/cache/pacman/pkg --env USER=$USER --env PW=$PW --name archbuild --replace archbuild
+      #     podman cp archbuild:/arch.sqfs .
 
-          podman rm archbuild
+      #     podman rm archbuild
 
-          mkdir dist
-          split --bytes=1G -d arch.sqfs dist/chunk-
+      #     mkdir dist
+      #     split --bytes=1G -d arch.sqfs dist/chunk-
 
-          sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
+      #     sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
 
-          echo "Successfully built artifact"
+      #     echo "Successfully built artifact"
 
       - name: Create Tag
         run: |
@@ -62,6 +59,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag ${{ env.TAG }}
           git push origin ${{ env.TAG }}
+          echo "TESTING" > dist/helloworld.txt
       
       - name: Create release
         uses: softprops/action-gh-release@v2
