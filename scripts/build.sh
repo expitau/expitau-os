@@ -2,8 +2,8 @@
 set -euxo pipefail
 
 # Set USER variable if not set, this comes from build script. Default password is not a secret
-USER=${USER:-user}
-PW=$(echo "${PW:-cGFzc3dvcmQ=}" | base64 --decode)
+SYSTEM_USER=${SYSTEM_USER:-user}
+SYSTEM_PW=$(echo "${SYSTEM_PW:-JHkkajlUJFI3V3dTdVYxbEsxTWdhWlFlVjBsbzAkTkMyaTNjd2ovZnVvZE84UXN4NlptblFWaWhFeE1sa0xjV0dWcmw3UGRyNgo=}" | base64 --decode)
 
 # Install base system and packages required for setup (remaining packages will be installed as part of setup)
 pacstrap -cKNP /mnt base base-devel linux linux-firmware linux-headers sof-firmware git networkmanager wget
@@ -33,6 +33,14 @@ cp paru/ /mnt/usr/src/paru -r
 cp -r /src /mnt/usr/src/system
 cp /src/system/target/release/system /mnt/usr/local/sbin/system
 
+cat <<EOF > /mnt/usr/src/system/.env
+SYSTEM_USER=$SYSTEM_USER
+
+# Encode: mkpasswd "password" | base64
+# Decode: echo "ENCODED" | base64 -d
+SYSTEM_PW=$SYSTEM_PW
+EOF
+
 # Copy pacman cache
 # The package cache will be baked in to the image, so it will be available already after installation
 # The cache will then be copied back to the host, so it can be reused for the next build
@@ -47,8 +55,8 @@ cp /scripts/setup.sh /mnt/setup.sh
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
 # Run setup script in chroot
-# These variables are passed in podman run with --env USER=username --env PW=password
-chroot /mnt env USER=$USER PW=$PW /bin/bash /setup.sh
+# These variables are passed in podman run with --env SYSTEM_USER=username --env SYSTEM_PW=password
+chroot /mnt env SYSTEM_USER=$SYSTEM_USER SYSTEM_PW=$SYSTEM_PW /bin/bash /setup.sh
 
 # Cleanup
 cp -R /mnt/var/cache/pacman/pkg/* /var/cache/pacman/pkg

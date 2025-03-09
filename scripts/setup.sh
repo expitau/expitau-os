@@ -36,10 +36,10 @@ systemctl enable gdm
 # === 2. Setup user account === #
 
 # Create user, enable sudo
-useradd -m -G wheel -s /bin/bash $USER
+useradd -m -G wheel -s /bin/bash -p $SYSTEM_PW $SYSTEM_USER
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-echo "source /etc/profile.d/trueline.sh" >> /home/$USER/.bashrc
-echo "$USER:$PW" | chpasswd
+echo "source /etc/profile.d/trueline.sh" >> /home/$SYSTEM_USER/.bashrc
+export USER=$SYSTEM_USER
 
 # === 3. Customization, gnome extensions, dconf settings === #
 
