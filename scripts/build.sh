@@ -69,3 +69,4 @@ mkdir -p /mnt/efi
 
 # Create image
 mksquashfs /mnt /arch.sqfs
+cp /mnt/usr/lib/kernel/arch-linux.efi /arch-linux.efi
