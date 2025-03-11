@@ -32,6 +32,18 @@
     - `bootctl install --esp-path=/mnt/@/efi`
     - `cp /mnt/@/usr/lib/kernel/arch-linux.efi /mnt/@/efi/EFI/Arch/arch-linux.efi`
 
+## Features
+
+### Security
+
+This image implements several layers of hardening to make the system more secure, including
+- Automatic microcode updates
+- Apparmor for manadatory access control
+- Immutability by default
+- Secure boot signed efi images
+- Full disk encryption
+- nftables based firewall
+
 ## How it works
 
 ### 1. Transport mechanism

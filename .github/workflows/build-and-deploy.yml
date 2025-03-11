@@ -41,6 +41,7 @@ jobs:
         run: |
           podman run --cap-add SYS_ADMIN --security-opt unmask=/proc/* --security-opt label=disable -v ./cache:/var/cache/pacman/pkg --env USER=$USER --env PW=$PW --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
+          podman cp archbuild:/usr/lib/kernel/arch-linux.efi .
 
           podman rm archbuild
 
@@ -48,6 +49,8 @@ jobs:
           split --bytes=1G -d arch.sqfs dist/chunk-
 
           sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
+
+          mv arch-linux.efi dist/
 
           echo "Successfully built artifact"
 
