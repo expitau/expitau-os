@@ -47,10 +47,9 @@ jobs:
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
-
-          sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
-
           mv arch-linux.efi dist/
+
+          sha256sum arch.sqfs dist/chunk-* dist/arch-linux.efi > dist/sha256sums.txt
 
           echo "Successfully built artifact"
 

@@ -3,5 +3,5 @@
 
 # <file system> <dir> <type> <options> <dump> <pass>
 LABEL=ARCH_BOOT /efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,nofail,,x-systemd.device-timeout=3,errors=remount-ro 0 2
-LABEL=ARCH_ROOT /data btrfs defaults,rw,relatime,subvol=data,nofail,x-systemd.device-timeout=3 0 0
-LABEL=ARCH_ROOT /mnt/system btrfs defaults,rw,relatime,subvolid=5,nofail,x-systemd.device-timeout=3 0 0
+/dev/mapper/root /data btrfs defaults,rw,relatime,subvol=data,nofail,x-systemd.device-timeout=3 0 0
+/dev/mapper/root /mnt/system btrfs defaults,rw,relatime,subvolid=5,nofail,x-systemd.device-timeout=3 0 0

@@ -21,9 +21,11 @@ pacman -U --noconfirm /usr/src/paru/paru-bin-!(d*).pkg.tar.zst
 # Install gnome, system utilities, and apps
 pacman -S --noconfirm \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
-    btrfs-progs squashfs-tools rust podman fuse-overlayfs reflector nano noto-fonts ttf-firacode-nerd bluez bluez-utils inotify-tools fastfetch whois \
+    btrfs-progs squashfs-tools rust podman fuse-overlayfs reflector nano noto-fonts ttf-firacode-nerd bluez bluez-utils inotify-tools fastfetch whois fprintd \
     nvidia-open-dkms nvidia-utils lib32-nvidia-utils apparmor nftables intel-ucode \
     firefox discord steam pika-backup mission-center krita obsidian
+
+paru -S --noconfirm visual-studio-code-bin
 
 # Enable system services
 systemctl enable NetworkManager
@@ -119,6 +121,7 @@ ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
 pacman -Sc --noconfirm
 
-# Fix home directory permissions
+# Fix permissions
 chown -R $USER:$USER /home/$USER
 chown -R $USER:$USER /var/data
+chmod 644 /etc/pacman.conf
