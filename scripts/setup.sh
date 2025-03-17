@@ -17,6 +17,7 @@ pacman -Syyu --noconfirm
 # Install AUR packages
 mkdir -p /tmp/aur
 chown nobody:nobody /tmp/aur
+chmod 644 /etc/pacman.conf
 for pkg in paru-bin visual-studio-code-bin; do
     runuser -u nobody -- /bin/bash -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur/$pkg --depth 1 && makepkg -D /tmp/aur/$pkg"
 done
