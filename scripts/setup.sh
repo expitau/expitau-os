@@ -15,8 +15,10 @@ pacman-key --populate archlinux
 pacman -Syyu --noconfirm
 
 # Install AUR packages
+mkdir -p /tmp/aur
+chown nobody:nobody /tmp/aur
 for pkg in paru-bin visual-studio-code-bin; do
-    sudo -u nobody /bin/bash -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur --depth 1 && makepkg -D /tmp/aur/$pkg"
+    sudo -u nobody -- /bin/bash -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur --depth 1 && makepkg -D /tmp/aur/$pkg"
 done
 
 pacman -U $(find . -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm
