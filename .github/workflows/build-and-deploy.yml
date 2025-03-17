@@ -39,7 +39,7 @@ jobs:
           SYSTEM_USER: ${{ vars.SYSTEM_USER }}
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
-          podman run --cap-add SYS_ADMIN --security-opt unmask=/proc/* --security-opt label=disable -v ./cache:/var/cache/pacman/pkg --env USER=$SYSTEM_USER --env PW=$SYSTEM_PW --name archbuild --replace archbuild
+          podman run --privileged -v ./cache:/var/cache/pacman/pkg --env USER=$SYSTEM_USER --env PW=$SYSTEM_PW --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
           podman cp archbuild:/arch-linux.efi .
 
