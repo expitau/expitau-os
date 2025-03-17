@@ -18,7 +18,7 @@ pacman -Syyu --noconfirm
 mkdir -p /tmp/aur
 chown nobody:nobody /tmp/aur
 for pkg in paru-bin visual-studio-code-bin; do
-    runuser -u nobody -- /bin/bash -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur --depth 1 && makepkg -D /tmp/aur/$pkg"
+    runuser -u nobody -- /bin/bash -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur/$pkg --depth 1 && makepkg -D /tmp/aur/$pkg"
 done
 
 pacman -U $(find . -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm

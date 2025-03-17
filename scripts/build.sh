@@ -3,7 +3,9 @@ set -euxo pipefail
 
 # Set USER variable if not set, this comes from build script. Default password is not a secret
 SYSTEM_USER=${SYSTEM_USER:-user}
+set +x
 SYSTEM_PW=$(echo "${SYSTEM_PW:-JHkkajlUJFI3V3dTdVYxbEsxTWdhWlFlVjBsbzAkTkMyaTNjd2ovZnVvZE84UXN4NlptblFWaWhFeE1sa0xjV0dWcmw3UGRyNgo=}" | base64 --decode)
+set -x
 
 # Install base system and packages required for setup (remaining packages will be installed as part of setup)
 pacstrap -cKNP /mnt base base-devel linux linux-firmware linux-headers sof-firmware git networkmanager wget
