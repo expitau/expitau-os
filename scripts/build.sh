@@ -15,9 +15,22 @@ cp /scripts/config/mkinitcpio.conf /mnt/etc/mkinitcpio.conf
 # Copy fstab
 cp /scripts/config/fstab /mnt/etc/fstab
 
+# Copy tmpfile
+sed "s/\$USER/$SYSTEM_USER/g" /scripts/config/data-tmpfile.conf > /mnt/etc/tmpfiles.d/00-data.conf
+
 # Copy desktop wallpaper
 mkdir -p /mnt/usr/share/backgrounds/gnome
 cp /scripts/config/wallpaper.png /mnt/usr/share/backgrounds/gnome/wallpaper.png
+
+# Set user profile picture
+mkdir -p /mnt/var/lib/AccountsService/{icons,users}
+cp /scripts/config/icon.png /mnt/var/lib/AccountsService/icons/$SYSTEM_USER.png
+cat <<EOF > /mnt/var/lib/AccountsService/users/$SYSTEM_USER
+[User]
+Session=
+Icon=/var/lib/AccountsService/icons/$SYSTEM_USER
+SystemAccount=false
+EOF
 
 # Copy shell config
 cp /scripts/config/trueline.sh /mnt/etc/profile.d/trueline.sh

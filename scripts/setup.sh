@@ -85,43 +85,20 @@ done
 # System links
 
 mkdir -p /var/data
-
 ln -s /var/data /home/$USER/Data
 
-ln -s /home/$USER/Data/Documents /home/$USER/Documents
-ln -s /home/$USER/Data/Games /home/$USER/Games
-ln -s /home/$USER/Data/Music /home/$USER/Music
-ln -s /home/$USER/Data/Scripts /home/$USER/Scripts
-ln -s /home/$USER/Data/Pictures /home/$USER/Pictures
-ln -s /home/$USER/Data/Videos /home/$USER/Videos
-
-mkdir -p /home/$USER/.config/StardewValley
-ln -s /home/$USER/Games/Stardew\ Valley /home/$USER/.config/StardewValley/Saves
-mkdir -p /home/$USER/.config/unity3d/Klei
-ln -s /home/$USER/Games/Oxygen\ Not\ Included /home/$USER/.config/unity3d/Klei/OxygenNotIncluded
-mkdir -p /home/$USER/.config/unity3d/Team\ Cherry
-ln -s /home/$USER/Games/Hollow\ Knight /home/$USER/.config/unity3d/Team\ Cherry/Hollow\ Knight
-mkdir -p /home/$USER/.local/share
-ln -s /home/$USER/Games/Terraria /home/$USER/.local/share/Terraria
-mkdir -p /home/$USER
-ln -s /home/$USER/Games/Factorio /home/$USER/.factorio
-mkdir -p /home/$USER/.local/share/Steam/steamapps/common/Cuphead
-ln -s /home/$USER/Games/Cuphead /home/$USER/.local/share/Steam/steamapps/common/Cuphead/Saves
-
-mkdir -p /home/$USER/.config
-ln -s /home/$USER/Data/AppData/vscode /home/$USER/.config/Code
-ln -s /home/$USER/Data/AppData/discord /home/$USER/.config/discord
-ln -s /home/$USER/Data/AppData/firefox /home/$USER/.mozilla
-ln -s /home/$USER/Data/AppData/obsidian /home/$USER/.config/obsidian
-mkdir -p /home/$USER/.local/share
-ln -s /home/$USER/Data/AppData/steam /home/$USER/.local/share/.steam
+# We have already copied a tmpfile to /etc/tmpfiles.d/00-data.conf
 
 rm -r /usr/src/system/cache
 ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
-pacman -Sc --noconfirm
+rm -r /etc/NetworkManager/system-connections
+ln -s /var/data/AppData/system/networkmanager /etc/NetworkManager/system-connections
 
 # Fix permissions
 chown -R $USER:$USER /home/$USER
-chown -R $USER:$USER /var/data
+chown $USER:$USER /var/data
 chmod 644 /etc/pacman.conf
+
+# Cleanup pacman cache
+pacman -Sc --noconfirm
