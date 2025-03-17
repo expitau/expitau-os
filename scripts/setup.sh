@@ -25,8 +25,6 @@ pacman -S --noconfirm \
     nvidia-open-dkms nvidia-utils lib32-nvidia-utils apparmor nftables intel-ucode \
     firefox discord steam pika-backup mission-center krita obsidian
 
-paru -S --noconfirm visual-studio-code-bin
-
 # Enable system services
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
@@ -45,6 +43,8 @@ sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo "source /etc/profile.d/trueline.sh" >> /home/$SYSTEM_USER/.bashrc
 export USER=$SYSTEM_USER
 
+# Install AUR packages as user
+su - $USER -c "paru -S --noconfirm visual-studio-code-bin"
 # === 3. Customization, gnome extensions, dconf settings === #
 
 # Dconf settings
