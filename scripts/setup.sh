@@ -14,9 +14,12 @@ EOF
 pacman-key --populate archlinux
 pacman -Syyu --noconfirm
 
-# Install AUR helper paru
-shopt -s extglob # 
-pacman -U --noconfirm /usr/src/paru/paru-bin-!(d*).pkg.tar.zst
+# Install AUR packages
+for pkg in paru-bin visual-studio-code-bin; do
+    sudo -u nobody /bin/bash -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur --depth 1 && makepkg -D /tmp/aur/$pkg"
+done
+
+pacman -U $(find . -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm
 
 # Install gnome, system utilities, and apps
 pacman -S --noconfirm \

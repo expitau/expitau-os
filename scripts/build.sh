@@ -39,9 +39,6 @@ cp /scripts/config/trueline.sh /mnt/etc/profile.d/trueline.sh
 mkdir -p /mnt/etc/dconf/db/local.d
 mv /scripts/config/dconf.conf /mnt/etc/dconf/db/local.d/00-profile
 
-# Copy paru source code
-cp paru/ /mnt/usr/src/paru -r
-
 # Copy system source code
 cp -r /src /mnt/usr/src/system
 cp /src/system/target/release/system /mnt/usr/local/sbin/system
