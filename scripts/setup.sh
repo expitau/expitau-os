@@ -37,8 +37,8 @@ mkdir -p /tmp/aur
 chown nobody:nobody /tmp/aur
 chmod 644 /etc/pacman.conf
 for pkg in paru-bin visual-studio-code-bin; do
-    sudo -u nobody -- git clone https://aur.archlinux.org/$pkg.git /tmp/aur/$pkg --depth 1
-    sudo -u nobody -- makepkg -D /tmp/aur/$pkg
+    sudo -u nobody -n -- git clone https://aur.archlinux.org/$pkg.git /tmp/aur/$pkg --depth 1
+    sudo -u nobody -n -- makepkg -D /tmp/aur/$pkg
 done
 
 pacman -U $(find . -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm
