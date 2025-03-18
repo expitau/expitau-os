@@ -4,7 +4,10 @@ set -euxo pipefail
 # === 1. Setup user account === #
 
 # Create user, enable sudo
-useradd -m -G wheel -s /bin/bash -p $SYSTEM_PW $SYSTEM_USER
+set +x
+useradd -m -G wheel -s /bin/bash -p $($SYSTEM_PW | base64 -d) $SYSTEM_USER
+set -x
+
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 echo "source /etc/profile.d/trueline.sh" >> /home/$SYSTEM_USER/.bashrc
 export USER=$SYSTEM_USER
