@@ -5,7 +5,7 @@ set -euxo pipefail
 
 # Create user, enable sudo
 set +x
-useradd -m -G wheel -s /bin/bash -p $($SYSTEM_PW | base64 -d) $SYSTEM_USER
+useradd -m -G wheel -s /bin/bash -p $(echo $SYSTEM_PW | base64 -d) $SYSTEM_USER
 set -x
 
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
