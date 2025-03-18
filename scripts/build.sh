@@ -17,6 +17,9 @@ cp /scripts/config/mkinitcpio.conf /mnt/etc/mkinitcpio.conf
 # Copy fstab
 cp /scripts/config/fstab /mnt/etc/fstab
 
+# Copy nftables
+cp /scripts/config/nftables.conf /mnt/etc/nftables.conf
+
 # Copy tmpfile
 sed "s/\$USER/$SYSTEM_USER/g" /scripts/config/data-tmpfile.conf > /mnt/etc/tmpfiles.d/00-data.conf
 
