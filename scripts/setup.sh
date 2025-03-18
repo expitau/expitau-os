@@ -1,7 +1,15 @@
 #!/bin/bash
 set -euxo pipefail
 
-# === 1. Update system, install packages === #
+# === 1. Setup user account === #
+
+# Create user, enable sudo
+useradd -m -G wheel -s /bin/bash -p $SYSTEM_PW $SYSTEM_USER
+sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+echo "source /etc/profile.d/trueline.sh" >> /home/$SYSTEM_USER/.bashrc
+export USER=$SYSTEM_USER
+
+# === 2. Update system, install packages === #
 
 # Enable multilib for steam
 cat <<EOF >> /etc/pacman.conf
@@ -42,16 +50,6 @@ systemctl enable gdm
 
 mkinitcpio -P
 
-# === 2. Setup user account === #
-
-# Create user, enable sudo
-useradd -m -G wheel -s /bin/bash -p $SYSTEM_PW $SYSTEM_USER
-sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-echo "source /etc/profile.d/trueline.sh" >> /home/$SYSTEM_USER/.bashrc
-export USER=$SYSTEM_USER
-
-# Install AUR packages as user
-su - $USER -c "paru -S --noconfirm visual-studio-code-bin"
 # === 3. Customization, gnome extensions, dconf settings === #
 
 # Dconf settings
