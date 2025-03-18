@@ -34,11 +34,11 @@ pacman -S --noconfirm \
 
 # Install AUR packages
 mkdir -p /tmp/aur
-chown $SYSTEM_USER:$SYSTEM_USER /tmp/aur
+chown nobody:nobody /tmp/aur
 chmod 644 /etc/pacman.conf
 for pkg in paru-bin visual-studio-code-bin; do
-    su - $SYSTEM_USER -c "git clone https://aur.archlinux.org/$pkg.git /tmp/aur/$pkg --depth 1"
-    su - $SYSTEM_USER -c "makepkg -D /tmp/aur/$pkg"
+    sudo -u nobody -- git clone https://aur.archlinux.org/$pkg.git /tmp/aur/$pkg --depth 1
+    sudo -u nobody -- makepkg -D /tmp/aur/$pkg
 done
 
 pacman -U $(find . -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm
