@@ -63,7 +63,7 @@ cp -R /var/cache/pacman/pkg/* /mnt/var/cache/pacman/pkg
 # Setup mounts (because we aren't using arch-chroot)
 mount -t proc /proc /mnt/proc
 mount -t sysfs /sys /mnt/sys
-mount -o bind /dev /mnt/dev
+mount --rbind /dev /mnt/dev
 cp /scripts/setup.sh /mnt/setup.sh
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
