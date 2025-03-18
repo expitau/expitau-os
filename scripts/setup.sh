@@ -97,7 +97,6 @@ ln -s /var/data /home/$USER/Data
 
 # We have already copied a tmpfile to /etc/tmpfiles.d/00-data.conf
 
-rm -r /usr/src/system/cache
 ln -s /var/cache/pacman/pkg /usr/src/system/cache
 
 rm -r /etc/NetworkManager/system-connections
