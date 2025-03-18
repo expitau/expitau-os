@@ -41,7 +41,7 @@ for pkg in paru-bin visual-studio-code-bin; do
     sudo -u nobody -- makepkg -D /tmp/aur/$pkg
 done
 
-pacman -U $(find . -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm
+pacman -U $(find /tmp/aur -type f -name "*.pkg.tar.zst" ! -name "*debug*" -print) --noconfirm
 
 # Enable system services
 systemctl enable NetworkManager
