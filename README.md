@@ -46,7 +46,7 @@ btrfs subvolume create /mnt/data
 Download squashfs image
 ```bash
 cd /mnt/@tmp
-curl https://raw.githubusercontent.com/expitau/System/refs/heads/main/create_image.sh | sh
+curl https://raw.githubusercontent.com/expitau/expitau-os/refs/heads/main/create_image.sh | sh
 ```
 
 Unpack the squashfs to root subvolume
@@ -140,7 +140,7 @@ When the container image is run, we perform a fairly traditional Arch installati
 
 > Why not generate the arch.sqfs file directly with `podman build`, skipping the need for a run step?
 
-This is what I attempted initially. However, podman requires special permissions to be able to mount and chroot inside a container (access to the host's `/proc` and ability to map user ids). For reproducibility reasons, these permissions can only be granted when *running* a container, and not when creating an image. While it would be ideal to do everything at build time, this is a suitable workaround. If someone smarter than me is able to find a solution, please [open a merge request](https://github.com/expitau/System/pulls).
+This is what I attempted initially. However, podman requires special permissions to be able to mount and chroot inside a container (access to the host's `/proc` and ability to map user ids). For reproducibility reasons, these permissions can only be granted when *running* a container, and not when creating an image. While it would be ideal to do everything at build time, this is a suitable workaround. If someone smarter than me is able to find a solution, please [open a merge request](https://github.com/expitau/expitau-os/pulls).
 
 ### 3.3 Runtime
 
