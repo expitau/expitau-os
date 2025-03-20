@@ -1,3 +1,7 @@
+## What is this?
+
+ExpitauOS is an immutable, cloud-native, Arch-based operating system that uses **podman** and **btrfs snapshots** to provide a customizable, personalized, and indestructible distro.
+
 ## 1. Installation
 
 ### 1.1 Preparing the disk
