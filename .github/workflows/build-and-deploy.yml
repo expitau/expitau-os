@@ -42,7 +42,7 @@ jobs:
           mkdir -p cache
           podman run --privileged -v ./cache:/var/cache/pacman/pkg --env SYSTEM_USER=$SYSTEM_USER --env SYSTEM_PW=$SYSTEM_PW --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
-          podman cp archbuild:/arch-linux.efi .
+          podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
 
           podman rm archbuild
 
