@@ -5,7 +5,7 @@ permissions:
   contents: write
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       # Check out the repository
@@ -18,7 +18,10 @@ jobs:
         with:
           path: cache
           key: cache-pacman-deps
-
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       # Set up Podman
       - name: Set up Podman
         run: |
