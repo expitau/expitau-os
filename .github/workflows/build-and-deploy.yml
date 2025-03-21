@@ -11,13 +11,6 @@ jobs:
       # Check out the repository
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Cache Pacman Dependencies
-        id: cache-pacman-deps
-        uses: actions/cache@v4
-        with:
-          path: cache
-          key: cache-pacman-deps
       - name: Remove unnecessary files
         run: |
           sudo rm -rf /usr/share/dotnet
