@@ -46,7 +46,7 @@ btrfs subvolume create /mnt/data
 Download squashfs image
 ```bash
 cd /mnt/@tmp
-curl https://raw.githubusercontent.com/expitau/expitau-os/refs/heads/main/create_image.sh | sh
+curl https://raw.githubusercontent.com/expitau/expitau-os/refs/heads/main/download_sqfs.sh | sh
 ```
 
 Unpack the squashfs to root subvolume
