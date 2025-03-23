@@ -26,7 +26,11 @@ jobs:
 
           sudo -i -u root bash -c 'source /etc/profile.d/nix.sh && nix-env -iA nixpkgs.podman'
 
-          sudo podman --version
+          nix-podman() {
+            sudo -i bash -c "source /etc/profile.d/nix.sh && podman \"$@\""
+          }
+
+          nix-podman --version
       
       - name: Build Rust project
         run: |
