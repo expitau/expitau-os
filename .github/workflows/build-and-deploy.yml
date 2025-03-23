@@ -38,9 +38,13 @@ jobs:
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
           mkdir -p cache
+          podman --version
+          source /etc/profile.d/nix.sh
+          podman --version
+          sudo podman --version 
 
           podman() {
-            sudo env PATH=$PATH podman $*
+            sudo $(which podman) $*
           }
 
           podman --version
