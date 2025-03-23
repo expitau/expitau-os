@@ -28,6 +28,7 @@ jobs:
       - name: Install Podman via Nix
         run: |
           podman --version
+          . $HOME/.nix-profile/etc/profile.d/nix.sh
           nix-env -iA nixpkgs.podman
           podman --version
       
