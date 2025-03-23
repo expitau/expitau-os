@@ -33,6 +33,7 @@ jobs:
           podman --version
           alias podman=$(which podman)
           sudo podman --version
+          sudo $(which podman) --version
       
       - name: Build Rust project
         run: |
