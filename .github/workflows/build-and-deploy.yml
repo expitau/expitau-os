@@ -25,12 +25,6 @@ jobs:
           bash <(curl -L https://nixos.org/nix/install) --daemon
 
           sudo -i -u root bash -c 'source /etc/profile.d/nix.sh && nix-env -iA nixpkgs.podman'
-
-          podman() {
-            sudo -i bash -c "source /etc/profile.d/nix.sh && podman \"$@\""
-          }
-
-          podman --version
       
       - name: Build Rust project
         run: |
@@ -42,6 +36,10 @@ jobs:
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
           mkdir -p cache
+
+          podman() {
+            sudo -i bash -c "source /etc/profile.d/nix.sh && podman \"$@\""
+          }
 
           podman --version
           podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
