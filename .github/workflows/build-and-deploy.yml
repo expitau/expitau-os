@@ -26,6 +26,7 @@ jobs:
 
           source /etc/profile.d/nix.sh
           nix-env -iA nixpkgs.podman
+          podman --version
       
       - name: Build Rust project
         run: |
