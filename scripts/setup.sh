@@ -71,12 +71,12 @@ dconf update
 # Download gnome extensions, install to root account temporarily
 mkdir -p /root/extensions
 cd /root/extensions
-wget -c https://extensions.gnome.org/extension-data/blur-my-shellaunetx.v67.shell-extension.zip
+wget -c https://extensions.gnome.org/extension-data/blur-my-shellaunetx.v68.shell-extension.zip
 wget -c https://extensions.gnome.org/extension-data/color-pickertuberry.v45.shell-extension.zip
-wget -c https://extensions.gnome.org/extension-data/caffeinepatapon.info.v55.shell-extension.zip
-gnome-extensions install blur-my-shellaunetx.v67.shell-extension.zip
+wget -c https://extensions.gnome.org/extension-data/caffeinepatapon.info.v56.shell-extension.zip
+gnome-extensions install blur-my-shellaunetx.v68.shell-extension.zip
 gnome-extensions install color-pickertuberry.v45.shell-extension.zip
-gnome-extensions install caffeinepatapon.info.v55.shell-extension.zip
+gnome-extensions install caffeinepatapon.info.v56.shell-extension.zip
 
 # Install gnome extensions system-wide
 chmod -R 755 /root/.local/share/gnome-shell/extensions/*
