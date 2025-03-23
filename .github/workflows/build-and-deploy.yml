@@ -27,10 +27,10 @@ jobs:
 
       - name: Install Podman via Nix
         run: |
-          podman --version
+          sudo podman --version
           . $HOME/.nix-profile/etc/profile.d/nix.sh
-          nix-env -iA nixpkgs.podman
-          podman --version
+          sudo nix-env -iA nixpkgs.podman
+          sudo podman --version
       
       - name: Build Rust project
         run: |
