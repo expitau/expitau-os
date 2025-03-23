@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p cache
 
-          sudo docker build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
+          sudo docker build --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           sudo docker create --name archbuild --replace archbuild
           sudo docker cp archbuild:/arch.sqfs .
           sudo docker cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
