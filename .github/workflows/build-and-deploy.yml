@@ -20,12 +20,6 @@ jobs:
           sudo docker builder prune -a
           df -h
       
-      # Set up Podman
-      - name: Set up Podman
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y podman
-      
       - name: Build Rust project
         run: |
           cd system && cargo build --release && cd -
@@ -37,10 +31,11 @@ jobs:
         run: |
           mkdir -p cache
 
-          sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
-          sudo podman cp archbuild:/arch.sqfs .
-          sudo podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
-          sudo podman rm archbuild
+          sudo docker build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
+          sudo docker create --name archbuild --replace archbuild
+          sudo docker cp archbuild:/arch.sqfs .
+          sudo docker cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
+          sudo docker rm archbuild
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
