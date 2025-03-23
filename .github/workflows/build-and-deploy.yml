@@ -22,7 +22,7 @@ jobs:
       
       - name: Install Nix
         run: |
-          curl -L https://nixos.org/nix/install | sh
+          bash <(curl -L https://nixos.org/nix/install) --daemon
           source $HOME/.nix-profile/etc/profile.d/nix.sh
 
       - name: Install Podman via Nix
