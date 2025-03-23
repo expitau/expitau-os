@@ -15,6 +15,7 @@ jobs:
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          
       # Set up Podman
       - name: Set up Podman
         run: |
@@ -25,21 +26,16 @@ jobs:
         run: |
           cd system && cargo build --release && cd -
 
-      # Build the Docker image using Podman
-      - name: Build Docker image
-        run: |
-          podman build -t archbuild:latest .
-      
       - name: Build artifact
         env:
           SYSTEM_USER: ${{ vars.SYSTEM_USER }}
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
           mkdir -p cache
-          podman run --privileged -v ./cache:/var/cache/pacman/pkg --env SYSTEM_USER=$SYSTEM_USER --env SYSTEM_PW=$SYSTEM_PW --name archbuild --replace archbuild
+
+          podman build --cap-add ALL --build-context cache=./cache -t archbuild .
           podman cp archbuild:/arch.sqfs .
           podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
-
           podman rm archbuild
 
           mkdir dist
@@ -49,7 +45,6 @@ jobs:
           sha256sum arch.sqfs dist/chunk-* dist/arch-linux.efi > dist/sha256sums.txt
 
           echo "Successfully built artifact"
-
       - name: Create Tag
         run: |
           git pull
