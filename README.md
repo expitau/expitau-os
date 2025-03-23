@@ -133,15 +133,11 @@ The squashfs image is built in three stages.
 
 ![Build](./docs/01-Build.png)
 
-So, after running, the podman container will have an `arch.sqfs` file in its root directory, which can be copied out of the container and deployed.
+So, after building, the podman image will have an `arch.sqfs` file in its root directory, which can be copied out of the container and deployed.
 
 ![Container Process](./docs/02-Container.png)
 
-When the container image is run, we perform a fairly traditional Arch installation. The only differences are that we skip disk partitioning, and compress to a squashfs image when we are finished. 
-
-> Why not generate the arch.sqfs file directly with `podman build`, skipping the need for a run step?
-
-This is what I attempted initially. However, podman requires special permissions to be able to mount and chroot inside a container (access to the host's `/proc` and ability to map user ids). For reproducibility reasons, these permissions can only be granted when *running* a container, and not when creating an image. While it would be ideal to do everything at build time, this is a suitable workaround. If someone smarter than me is able to find a solution, please [open a merge request](https://github.com/expitau/expitau-os/pulls).
+The build is a fairly traditional Arch installation. The only differences are that we skip disk partitioning, and compress to a squashfs image when we are finished. 
 
 ### 3.3 Runtime
 

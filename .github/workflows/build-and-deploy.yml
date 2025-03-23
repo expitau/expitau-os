@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p cache
 
-          sudo podman build --cap-add ALL --build-context cache=./cache -t archbuild .
+          sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           sudo podman cp archbuild:/arch.sqfs .
           sudo podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
           sudo podman rm archbuild

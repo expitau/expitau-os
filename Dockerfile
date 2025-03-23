@@ -4,10 +4,8 @@ ARG SYSTEM_PW=JHkkajlUJFI3V3dTdVYxbEsxTWdhWlFlVjBsbzAkTkMyaTNjd2ovZnVvZE84UXN4Nl
 # Build image, this is the "ISO" that will be used to create the chroot environment
 FROM archlinux:base-devel as iso
 ARG SYSTEM_USER SYSTEM_PW
-# Copy host's pacman cache if not initialized
-# RUN --mount=type=bind,from=cache,target=/tmp/cache \
-#     --mount=type=cache,target=/var/cache/pacman/pkg bash -c "if [ -z \"\$(ls -A /var/cache/pacman/pkg)\" ]; then echo \"Cache is empty. Populating from host's cache.\"; cp -r /tmp/cache/* /var/cache/pacman/pkg || true; else echo \"Cache already exists: \$(du -sh /var/cache/pacman/pkg | awk '{print \$1}')\"; echo \"First 5 items in cache:\"; ls -A /var/cache/pacman/pkg | head -n 5; fi"
 
+# Copy host's pacman cache if not initialized
 RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg echo "Cache has $(du -sh /var/cache/pacman/pkg | awk '{print $1}')"
 
 RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg pacman -Syu --noconfirm
