@@ -42,7 +42,7 @@ jobs:
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
           mkdir -p cache
-
+          sudo podman --version
           sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           sudo podman create --name archbuild --replace archbuild
           sudo podman cp archbuild:/arch.sqfs .
