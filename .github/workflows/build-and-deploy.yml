@@ -44,6 +44,7 @@ jobs:
           mkdir -p cache
           . $HOME/.nix-profile/etc/profile.d/nix.sh
           which podman
+          sudo $(which podman) --version
           alias podman="sudo $(which podman)"
           podman --version
           podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
