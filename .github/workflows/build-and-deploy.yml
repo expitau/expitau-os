@@ -20,17 +20,16 @@ jobs:
           sudo docker builder prune -a
           df -h
       
-      - name: Install Nix
+      - name: Install Nix & Podman
         run: |
+          sudo -i
           curl -L https://nixos.org/nix/install | sh
           source $HOME/.nix-profile/etc/profile.d/nix.sh
 
-      - name: Install Podman via Nix
-        run: |
-          sudo podman --version
+          podman --version
           . $HOME/.nix-profile/etc/profile.d/nix.sh
-          sudo nix-env -iA nixpkgs.podman
-          sudo podman --version
+          nix-env -iA nixpkgs.podman
+          podman --version
       
       - name: Build Rust project
         run: |
@@ -42,10 +41,9 @@ jobs:
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
           mkdir -p cache
+          
+          sudo -i
           . $HOME/.nix-profile/etc/profile.d/nix.sh
-          which podman
-          sudo $(which podman) --version
-          alias podman="sudo $(which podman)"
           podman --version
           podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           podman create --name archbuild --replace archbuild
