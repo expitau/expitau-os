@@ -22,14 +22,11 @@ jobs:
       
       - name: Install Nix & Podman
         run: |
-          sudo -i
-          curl -L https://nixos.org/nix/install | sh
-          source $HOME/.nix-profile/etc/profile.d/nix.sh
+          bash <(curl -L https://nixos.org/nix/install) --daemon
 
-          podman --version
-          . $HOME/.nix-profile/etc/profile.d/nix.sh
-          nix-env -iA nixpkgs.podman
-          podman --version
+          sudo -i -u root bash -c 'source /etc/profile.d/nix.sh && nix-env -iA nixpkgs.podman'
+
+          sudo podman --version
       
       - name: Build Rust project
         run: |
