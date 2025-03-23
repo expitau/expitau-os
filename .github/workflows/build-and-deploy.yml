@@ -44,7 +44,7 @@ jobs:
 
           sudo -i
           . $HOME/.nix-profile/etc/profile.d/nix.sh
-          podman --version
+          sudo podman --version
           sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           podman create --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
