@@ -24,7 +24,8 @@ jobs:
         run: |
           bash <(curl -L https://nixos.org/nix/install) --daemon
 
-          sudo -i -u root bash -c 'source /etc/profile.d/nix.sh && nix-env -iA nixpkgs.podman'
+          source /etc/profile.d/nix.sh
+          nix-env -iA nixpkgs.podman
       
       - name: Build Rust project
         run: |
