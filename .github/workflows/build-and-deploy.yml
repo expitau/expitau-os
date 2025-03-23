@@ -20,23 +20,20 @@ jobs:
           sudo docker builder prune -a
           df -h
       
-      - name: Set up Nix
+      - name: Install Nix
         run: |
           curl -L https://nixos.org/nix/install | sh
           source $HOME/.nix-profile/etc/profile.d/nix.sh
 
-      - name: Install Podman using Nix
+      - name: Install Podman via Nix
         run: |
-          # Make sure we're running as root
-          sudo -i 
-          
-          # Install Podman with Nix
+          podman --version
+          . $HOME/.nix-profile/etc/profile.d/nix.sh
           nix-env -iA nixpkgs.podman
-
-      - name: Verify Podman installation
-        run: |
+          podman --version
+          alias podman=$(which podman)
           sudo podman --version
-          
+      
       - name: Build Rust project
         run: |
           cd system && cargo build --release && cd -
