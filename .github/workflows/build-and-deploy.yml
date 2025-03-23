@@ -12,16 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - run: df -h
-
       - name: "Cleanup disk space"
         run: |
+          df -h
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
           sudo docker builder prune -a
+          df -h
       
-      - run: df -h
-          
       # Set up Podman
       - name: Set up Podman
         run: |
