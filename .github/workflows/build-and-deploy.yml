@@ -34,10 +34,10 @@ jobs:
         run: |
           mkdir -p cache
 
-          podman build --cap-add ALL --build-context cache=./cache -t archbuild .
-          podman cp archbuild:/arch.sqfs .
-          podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
-          podman rm archbuild
+          sudo podman build --cap-add ALL --build-context cache=./cache -t archbuild .
+          sudo podman cp archbuild:/arch.sqfs .
+          sudo podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
+          sudo podman rm archbuild
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-

@@ -126,9 +126,10 @@ cat chunks/* > arch.sqfs
 
 ### 3.2 Build process
 
-The squashfs image is built in two steps. 
-1. Podman builds a "builder" image, that acts as the live installer for a traditional arch install. 
-2. When this image is run, this image calls the entrypoint [build.sh](./scripts/build.sh), which runs pacstrap, chroots and runs [setup.sh](./scripts/setup.sh), and then compresses the fresh arch installation to a squashfs file.
+The squashfs image is built in three stages. 
+1. An "iso" stage acts as the live installer for a traditional arch install, and runs pacstrap with basic utilities required for setup (see [build.sh](./scripts/build.sh))
+2. A "chroot" stage runs commands that setup and customize the system, (see [setup.sh](./scripts/setup.sh))
+3. An "image" stage finally compresses the fresh arch installation to a squashfs file, and is the final image.
 
 ![Build](./docs/01-Build.png)
 
