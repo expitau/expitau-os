@@ -31,9 +31,6 @@ jobs:
           . $HOME/.nix-profile/etc/profile.d/nix.sh
           nix-env -iA nixpkgs.podman
           podman --version
-          alias podman=$(which podman)
-          sudo podman --version
-          sudo $(which podman) --version
       
       - name: Build Rust project
         run: |
@@ -45,12 +42,13 @@ jobs:
           SYSTEM_PW: ${{ secrets.SYSTEM_PW }}
         run: |
           mkdir -p cache
-          sudo podman --version
-          sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
-          sudo podman create --name archbuild --replace archbuild
-          sudo podman cp archbuild:/arch.sqfs .
-          sudo podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
-          sudo podman rm archbuild
+          alias podman="sudo $(which podman)"
+          podman --version
+          podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
+          podman create --name archbuild --replace archbuild
+          podman cp archbuild:/arch.sqfs .
+          podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
+          podman rm archbuild
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
