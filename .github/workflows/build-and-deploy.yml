@@ -20,6 +20,16 @@ jobs:
           sudo docker builder prune -a
           df -h
       
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install software-properties-common
+          source /etc/os-release
+          sudo add-apt-repository -y "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /"
+          wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get -y install podman
+      
       - name: Build Rust project
         run: |
           cd system && cargo build --release && cd -
@@ -31,11 +41,11 @@ jobs:
         run: |
           mkdir -p cache
 
-          sudo docker build --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
-          sudo docker create --name archbuild --replace archbuild
-          sudo docker cp archbuild:/arch.sqfs .
-          sudo docker cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
-          sudo docker rm archbuild
+          sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
+          sudo podman create --name archbuild --replace archbuild
+          sudo podman cp archbuild:/arch.sqfs .
+          sudo podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
+          sudo podman rm archbuild
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
