@@ -26,11 +26,11 @@ jobs:
 
           sudo -i -u root bash -c 'source /etc/profile.d/nix.sh && nix-env -iA nixpkgs.podman'
 
-          nix-podman() {
+          podman() {
             sudo -i bash -c "source /etc/profile.d/nix.sh && podman \"$@\""
           }
 
-          nix-podman --version
+          podman --version
       
       - name: Build Rust project
         run: |
@@ -43,10 +43,8 @@ jobs:
         run: |
           mkdir -p cache
 
-          sudo -i
-          . $HOME/.nix-profile/etc/profile.d/nix.sh
-          sudo podman --version
-          sudo podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
+          podman --version
+          podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           podman create --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
           podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
