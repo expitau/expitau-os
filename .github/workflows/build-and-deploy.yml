@@ -38,7 +38,7 @@ jobs:
           mkdir -p cache
 
           podman() {
-            sudo -i bash -c "source /etc/profile.d/nix.sh && podman \"$@\""
+            sudo -i bash -c "source /etc/profile.d/nix.sh && podman $@"
           }
 
           podman --version
