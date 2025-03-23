@@ -1,19 +1,18 @@
 ARG SYSTEM_USER=user
 ARG SYSTEM_PW=JHkkajlUJFI3V3dTdVYxbEsxTWdhWlFlVjBsbzAkTkMyaTNjd2ovZnVvZE84UXN4NlptblFWaWhFeE1sa0xjV0dWcmw3UGRyNgo=
 
+# Build image, this is the "ISO" that will be used to create the chroot environment
 FROM archlinux:base-devel as iso
-
+ARG SYSTEM_USER SYSTEM_PW
 # Copy host's pacman cache if not initialized
-RUN --mount=type=bind,source=./cache,target=/tmp/cache ls /tmp/cache
-# RUN --mount=type=bind,source=./cache,target=/tmp/cache \
-#     --mount=type=cache,target=/var/cache/pacman/pkg \
-#     [ "\$(ls -A /var/cache/pacman/pkg)" ] \
-#         && echo "Cache already exists: $(du -sh /var/cache/pacman/pkg | awk '{print $1}')" \
-#         || (echo "Cache is empty. Populating from host's ./cache." && cp -r /tmp/cache/* /var/cache/pacman/pkg || true)
+# RUN --mount=type=bind,from=cache,target=/tmp/cache \
+#     --mount=type=cache,target=/var/cache/pacman/pkg bash -c "if [ -z \"\$(ls -A /var/cache/pacman/pkg)\" ]; then echo \"Cache is empty. Populating from host's cache.\"; cp -r /tmp/cache/* /var/cache/pacman/pkg || true; else echo \"Cache already exists: \$(du -sh /var/cache/pacman/pkg | awk '{print \$1}')\"; echo \"First 5 items in cache:\"; ls -A /var/cache/pacman/pkg | head -n 5; fi"
 
-RUN pacman -Syu --noconfirm
+RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg echo "Cache has $(du -sh /var/cache/pacman/pkg | awk '{print $1}')"
 
-RUN pacman -S arch-install-scripts rust git --noconfirm
+RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg pacman -Syu --noconfirm
+
+RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg pacman -S arch-install-scripts rust git --noconfirm
 
 RUN echo "root:0:1000" >> /etc/subuid && echo "root:0:1000" >> /etc/subgid
 
@@ -22,20 +21,21 @@ RUN cd /src/system && cargo build --release
 
 COPY scripts /scripts
 
-RUN --mount=type=cache,target=/var/cache/pacman/pkg SYSTEM_USER=${SYSTEM_USER} SYSTEM_PW=${SYSTEM_PW} bash scripts/build.sh
+RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg SYSTEM_USER=$SYSTEM_USER SYSTEM_PW=$SYSTEM_PW bash scripts/build.sh
 
-# FROM scratch as chroot
+# Our main system. Everything is installed here.
+FROM scratch as chroot
+ARG SYSTEM_USER SYSTEM_PW
+COPY --from=iso /mnt /
 
-# COPY --from=iso /mnt /
+RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg SYSTEM_USER=$SYSTEM_USER SYSTEM_PW=$SYSTEM_PW bash /setup.sh
 
-# RUN --mount=type=cache,target=/var/cache/pacman/pkg SYSTEM_USER=${SYSTEM_USER} SYSTEM_PW=${SYSTEM_PW} bash /setup.sh
+RUN rm /setup.sh
 
-# RUN rm /setup.sh
+# Cleanup and create the final image
+FROM archlinux:base-devel as image
+COPY --from=chroot / /mnt
 
-# FROM archlinux:base-devel as image
+RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg pacman -Sy squashfs-tools --noconfirm
 
-# COPY --from=chroot / /mnt
-
-# RUN pacman -S squashfs-tools --noconfirm
-
-# RUN mksquashfs /mnt /arch.sqfs
+RUN mksquashfs /mnt /arch.sqfs

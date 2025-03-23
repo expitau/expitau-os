@@ -91,22 +91,13 @@ for file in /usr/share/applications/{avahi-discover,bssh,bvnc,qv4l2,qvidcap,elec
     [ -f "$file" ] && sed 's/\[Desktop Entry\]/\[Desktop Entry\]\nHidden=true/' "$file" > "/home/$USER/.local/share/applications/$(basename "$file")"
 done
 
-# === 4. Setup home directory === #
-
-# System links
-
-mkdir -p /var/data
-ln -s /var/data /home/$USER/Data
-
-# We have already copied a tmpfile to /etc/tmpfiles.d/00-data.conf
-
+# === 4. System links and cleanup === #
 ln -s /var/cache/pacman/pkg /usr/src/system/cache
-
 rm -r /etc/NetworkManager/system-connections
 ln -s /var/data/AppData/system/networkmanager /etc/NetworkManager/system-connections
 
 # Fix permissions
-chown -R $USER:$USER /home/$USER
+mkdir -p /var/data
 chown $USER:$USER /var/data
 chmod 644 /etc/pacman.conf
 

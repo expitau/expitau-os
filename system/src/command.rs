@@ -181,7 +181,7 @@ pub fn build(cli: &Cli) -> Result<(), String> {
 
     // command!("ls", "-la").stdout(std::process::Stdio::inherit()).status().map_err(|e| format!("Failed to build: {}", e))?.success().then(|| 0).ok_or("Failed to build")?;
     util::run(
-        command!("podman", "build", "--no-cache", "-t", "archbuild", ".")
+        command!("podman", "build", "--cap-add", "ALL", "--build-context", "cache=/var/cache/pacman/pkg", "-t", "archbuild", ".")
             .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
             .stdout(std::process::Stdio::inherit()),
     )?;
@@ -189,15 +189,7 @@ pub fn build(cli: &Cli) -> Result<(), String> {
     util::run(
         command!(
             "podman",
-            "run",
-            "--sig-proxy=true",
-            "--privileged",
-            "-v",
-            "./cache:/var/cache/pacman/pkg",
-            "--env",
-            &format!("SYSTEM_USER={}", user),
-            "--env",
-            &format!("SYSTEM_PW={}", pw),
+            "create",
             "--name",
             "archbuild",
             "--replace",
