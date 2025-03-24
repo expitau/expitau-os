@@ -26,14 +26,12 @@ FROM scratch as chroot
 ARG SYSTEM_USER SYSTEM_PW
 COPY --from=iso /mnt /
 
+COPY scripts/setup.sh /setup.sh
 RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg SYSTEM_USER=$SYSTEM_USER SYSTEM_PW=$SYSTEM_PW bash /setup.sh
-
 RUN rm /setup.sh
 
 # Cleanup and create the final image
-FROM archlinux:base-devel as image
-COPY --from=chroot / /mnt
+FROM alpine:latest as image
 
-RUN --mount=type=cache,from=cache,target=/var/cache/pacman/pkg pacman -Sy squashfs-tools --noconfirm
-
-RUN mksquashfs /mnt /arch.sqfs
+RUN apk add --no-cache squashfs-tools
+RUN --mount=type=bind,from=chroot,source=/,target=/mnt mksquashfs /mnt /arch.sqfs

@@ -61,14 +61,12 @@ jobs:
           podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
           podman create --name archbuild --replace archbuild
           podman cp archbuild:/arch.sqfs .
-          podman cp archbuild:/mnt/usr/lib/kernel/arch-linux.efi .
           podman rm archbuild
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-
-          mv arch-linux.efi dist/
 
-          sha256sum arch.sqfs dist/chunk-* dist/arch-linux.efi > dist/sha256sums.txt
+          sha256sum arch.sqfs dist/chunk-* > dist/sha256sums.txt
 
           echo "Successfully built artifact"
       - name: Create Tag

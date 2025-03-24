@@ -53,6 +53,4 @@ EOF
 # Copy tmpfile
 sed "s/\$USER/$SYSTEM_USER/g" /scripts/config/data-tmpfile.conf > /mnt/etc/tmpfiles.d/00-data.conf
 
-cp /scripts/setup.sh /mnt/setup.sh
-
 mkdir -p /mnt/efi
