@@ -58,10 +58,10 @@ jobs:
           }
 
           podman --version
-          podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t archbuild .
-          podman create --name archbuild --replace archbuild
-          podman cp archbuild:/arch.sqfs .
-          podman rm archbuild
+          podman build --cap-add ALL --build-context cache=./cache --build-arg SYSTEM_USER=$SYSTEM_USER --build-arg SYSTEM_PW=$SYSTEM_PW -t expitauos .
+          podman create --name expitauos --replace expitauos
+          podman cp expitauos:/arch.sqfs .
+          podman rm expitauos
 
           mkdir dist
           split --bytes=1G -d arch.sqfs dist/chunk-

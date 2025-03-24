@@ -165,8 +165,8 @@ pub fn build(cli: &Cli) -> Result<(), String> {
 
     ctrlc::set_handler(move || {
         println!("Ctrl+C pressed, shutting down...");
-        util::run(command!("podman", "kill", "archbuild")).ok();
-        util::run(command!("podman", "rm", "archbuild")).ok();
+        util::run(command!("podman", "kill", "expitauos")).ok();
+        util::run(command!("podman", "rm", "expitauos")).ok();
         std::process::exit(130);
     })
     .expect("Error setting Ctrl+C handler");
@@ -181,9 +181,23 @@ pub fn build(cli: &Cli) -> Result<(), String> {
 
     // command!("ls", "-la").stdout(std::process::Stdio::inherit()).status().map_err(|e| format!("Failed to build: {}", e))?.success().then(|| 0).ok_or("Failed to build")?;
     util::run(
-        command!("podman", "build", "--cap-add", "ALL", "--build-context", "cache=/var/cache/pacman/pkg", "-t", "archbuild", ".")
-            .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
-            .stdout(std::process::Stdio::inherit()),
+        command!(
+            "podman",
+            "build",
+            "--cap-add",
+            "ALL",
+            "--build-context",
+            "cache=/var/cache/pacman/pkg",
+            "--build-arg",
+            format!("SYSTEM_USER={}", user).as_str(),
+            "--build-arg",
+            format!("SYSTEM_PW={}", pw).as_str(),
+            "-t",
+            "expitauos",
+            "."
+        )
+        .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
+        .stdout(std::process::Stdio::inherit()),
     )?;
 
     util::run(
@@ -191,22 +205,22 @@ pub fn build(cli: &Cli) -> Result<(), String> {
             "podman",
             "create",
             "--name",
-            "archbuild",
+            "expitauos",
             "--replace",
-            "archbuild"
+            "expitauos"
         )
         .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
         .stdout(std::process::Stdio::inherit()),
     )?;
 
     util::run(
-        command!("podman", "cp", "archbuild:/arch.sqfs", ".")
+        command!("podman", "cp", "expitauos:/arch.sqfs", ".")
             .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
             .stdout(std::process::Stdio::inherit()),
     )?;
 
     util::run(
-        command!("podman", "rm", "archbuild")
+        command!("podman", "rm", "expitauos")
             .current_dir(cli.get_build_dir()?.to_string_lossy().as_ref())
             .stdout(std::process::Stdio::inherit()),
     )?;
