@@ -24,18 +24,8 @@ jobs:
           sudo swapoff -a
           sudo rm -f /mnt/swapfile
 
-          sudo apt-get remove -y '^aspnetcore-.*'
-          sudo apt-get remove -y '^dotnet-.*'
-          sudo apt-get remove -y '^llvm-.*'
-          sudo apt-get remove -y 'php.*'
-          sudo apt-get remove -y '^mongodb-.*'
-          sudo apt-get remove -y '^mysql-.*'
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mongodb-.*' '^mysql-.*' google-chrome-stable microsoft-edge-stable google-cloud-cli powershell azure-cli firefox mono-devel libgl1-mesa-dri --fix-missing
 
-          sudo apt-get remove -y google-chrome-stable microsoft-edge-stable
-          sudo apt-get remove -y google-cloud-cli --fix-missing
-          sudo apt-get remove -y powershell --fix-missing
-
-          sudo apt-get remove -y azure-cli firefox mono-devel libgl1-mesa-dri --fix-missing
           sudo apt-get autoremove -y
           sudo apt-get clean
           df -h
