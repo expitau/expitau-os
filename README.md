@@ -22,6 +22,7 @@ mkfs.vfat /dev/sda1
 dosfslabel /dev/sda1 ARCH_BOOT
 cryptsetup -v luksFormat /dev/sda2
 cryptsetup config /dev/sda2 --label ARCH_ROOT
+systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=yes /dev/sda2
 cryptsetup open /dev/sda2 root
 mkfs.btrfs /dev/mapper/root
 ```

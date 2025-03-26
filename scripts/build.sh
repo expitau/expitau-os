@@ -14,6 +14,16 @@ cp /scripts/config/boot-entry.conf /mnt/etc/boot-entry.conf
 # Copy fstab
 cp /scripts/config/fstab /mnt/etc/fstab
 
+# Write crypttab
+cat <<EOF > /mnt/etc/crypttab.initramfs
+root /dev/disk/by-label/ARCH_ROOT
+EOF
+
+# Make sd-vconsole happy
+cat <<EOF > /mnt/etc/vconsole.conf
+KEYMAP=us
+EOF
+
 # Copy nftables
 cp /scripts/config/nftables.conf /mnt/etc/nftables.conf
 
