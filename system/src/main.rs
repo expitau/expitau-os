@@ -11,7 +11,7 @@ use clap::{Parser, Subcommand};
 #[command(about = "System administration toolkit", long_about = None)]
 struct Cli {
     /// Btrfs subvolume directory
-    #[clap(long, default_value = "/mnt")]
+    #[clap(long, default_value = "/mnt/system")]
     subvolume_dir: String,
 
     /// Build directory

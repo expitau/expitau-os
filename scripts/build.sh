@@ -61,6 +61,6 @@ SYSTEM_PW=$SYSTEM_PW
 EOF
 
 # Copy tmpfile
-sed "s/\$USER/$SYSTEM_USER/g" /scripts/config/data-tmpfile.conf > /mnt/etc/tmpfiles.d/00-data.conf
+# sed "s/\$USER/$SYSTEM_USER/g" /scripts/config/data-tmpfile.conf > /mnt/etc/tmpfiles.d/00-data.conf
 
 mkdir -p /mnt/efi

@@ -40,7 +40,8 @@ Mount btrfs and create subvolumes
 mount /dev/mapper/root /mnt
 btrfs subvolume create /mnt/@root
 btrfs subvolume create /mnt/@tmp # For cloning squashfs before install
-btrfs subvolume create /mnt/data
+btrfs subvolume create /mnt/@data
+btrfs subvolume set-default /mnt/@data
 ```
 
 ### 1.2 Unpacking the OS image
@@ -82,7 +83,7 @@ mkpasswd "password" | base64 #JHkkajlUJFI3V3dTdVYxbEsxTWdhWlFlVjBsbzAkTkMyaTNjd2
 It is similarly stored as a `SYSTEM_PW` environment variable or repository secret.
 
 ### 2.2 Home Directory
-The home directory houses many symbolic links that direct persistent data to be stored in `/var/data` (mounted as `data` subvolume on `/dev/mapper/root`). You can configure how it is set up in [data-tmpfile.conf](./scripts/config/data-tmpfile.conf)
+The home directory houses many symbolic links that direct persistent data to be stored in `/home/nathan/Data` (mounted as `data` subvolume on `/dev/mapper/root`). You can configure how it is set up in [data-tmpfile.conf](./scripts/config/data-tmpfile.conf)
 
 ### 2.3 Settings
 Default gnome settings are stored in [dconf.conf](./scripts/config/dconf.conf), and are copied to etc in the build script. Most customization settings are stored here. You can find your current dconf with

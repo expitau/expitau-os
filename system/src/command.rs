@@ -1,12 +1,15 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::command;
 use crate::util;
+use crate::util::get_subvolume_tree;
 use crate::Cli;
 
 pub fn status(cli: &Cli) -> Result<(), String> {
     let subvolume_dir = cli.get_subvolume_dir()?;
     let efi_dir = cli.get_efi_dir()?;
+
+    get_subvolume_tree(Path::new(subvolume_dir.to_string_lossy().as_ref()).to_path_buf())?;
     // // List all snapshots
     // let snapshots = util::run(command!("btrfs", "qgroup", "show", subvolume_dir.to_string_lossy().as_ref()))?;
 
@@ -42,8 +45,6 @@ pub fn status(cli: &Cli) -> Result<(), String> {
         .ok_or("Could not get default subvolume")?
         .trim();
 
-    let current = util::get_current_id()?;
-
     // For each snapshot
     for snapshot in snapshots.lines() {
         // Check if {snapshot}.conf exists in {efi_dir}/loader/entries
@@ -52,19 +53,10 @@ pub fn status(cli: &Cli) -> Result<(), String> {
             .join(format!("{}.conf", snapshot));
 
         println!(
-            "{}{}{}{}",
-            snapshot,
-            if snapshot == default {
-                " (DEFAULT)"
-            } else {
-                ""
-            },
-            if snapshot == current {
-                " (CURRENT)"
-            } else {
-                ""
-            },
-            if entry_path.exists() { " (PINNED)" } else { "" }
+            "{}{}{}",
+            if snapshot == default { "⭐" } else { "  " },
+            if entry_path.exists() { " 📌" } else { "  " },
+            snapshot
         );
     }
 

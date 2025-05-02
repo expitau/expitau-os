@@ -94,11 +94,11 @@ done
 # === 4. System links and cleanup === #
 ln -s /var/cache/pacman/pkg /usr/src/system/cache
 rm -r /etc/NetworkManager/system-connections
-ln -s /var/data/AppData/system/networkmanager /etc/NetworkManager/system-connections
+ln -s /home/nathan/Data/AppData/system/networkmanager /etc/NetworkManager/system-connections
 
 # Fix permissions
-mkdir -p /var/data
-chown $USER:$USER /var/data
+mkdir -p /home/nathan/Data
+chown $USER:$USER /home/nathan/Data
 chmod 644 /etc/pacman.conf
 
 # Cleanup pacman cache
