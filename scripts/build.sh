@@ -48,9 +48,8 @@ mv /scripts/config/dconf.conf /mnt/etc/dconf/db/local.d/00-profile
 # Copy system source code
 cp -r /src /mnt/usr/src/system
 cp /src/system/target/release/system /mnt/usr/local/sbin/system
-  
-cp /scripts/config/.bashrc /mnt/home/$SYSTEM_USER/.bashrc
-chown $SYSTEM_USER:$SYSTEM_USER /mnt/home/$SYSTEM_USER/.bashrc
+
+cp /scripts/config/shell.sh /etc/profile.d/shell.sh
 
 cat <<EOF > /mnt/usr/src/system/.env
 SYSTEM_USER=$SYSTEM_USER

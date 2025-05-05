@@ -9,6 +9,7 @@ useradd -m -G wheel -s /bin/bash -p $(echo $SYSTEM_PW | base64 -d) $SYSTEM_USER
 set -x
 
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+echo "source /etc/profile.d/shell.sh" >> /home/$SYSTEM_USER/.bashrc
 export USER=$SYSTEM_USER
 
 # === 2. Update system, install packages === #
@@ -27,9 +28,9 @@ pacman -Syyu --noconfirm
 # Install gnome, system utilities, and apps
 pacman -S --noconfirm \
     baobab gdm gnome-backgrounds gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-shell-extensions gnome-text-editor gnome-user-share gnome-weather gvfs gvfs-google loupe nautilus snapshot sushi xdg-desktop-portal-gnome totem \
-    btrfs-progs squashfs-tools rust podman fuse-overlayfs \
-    reflector nano noto-fonts ttf-firacode-nerd fastfetch whois \
-    bluez bluez-utils inotify-tools fprintd power-profiles-daemon \
+    btrfs-progs squashfs-tools rust podman fuse-overlayfs sbctl \
+    reflector nano noto-fonts ttf-firacode-nerd fastfetch whois less lxd net-tools xorg-xhost tree \
+    bluez bluez-utils inotify-tools fprintd power-profiles-daemon networkmanager-openconnect \
     libvirt qemu-base virt-manager \
     nvidia-open-dkms nvidia-utils lib32-nvidia-utils apparmor nftables intel-ucode \
     firefox discord steam pika-backup mission-center krita obsidian
