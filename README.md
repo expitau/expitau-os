@@ -96,8 +96,6 @@ The desktop wallpaper is set in [wallpaper.png](./scripts/config/wallpaper.png)
 
 The user profile icon is set in [icon.png](./scripts/config/icon.png)
 
-A custom PS1 prompt and terminal keybinds are applied in [trueline.sh](./scripts/config/trueline.sh)
-
 ### 2.5 Packages & Advanced Configuration
 
 Most configuration should be done in [setup.sh](./scripts/setup.sh). This is how the main system is built, including packages, system services, gnome extensions, and tweaks. [build.sh](./scripts/build.sh) should only be modified to copy scripts before chrooting

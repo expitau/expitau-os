@@ -41,9 +41,6 @@ Icon=/var/lib/AccountsService/icons/$SYSTEM_USER
 SystemAccount=false
 EOF
 
-# Copy shell config
-cp /scripts/config/trueline.sh /mnt/etc/profile.d/trueline.sh
-
 # Copy dconf settings
 mkdir -p /mnt/etc/dconf/db/local.d
 mv /scripts/config/dconf.conf /mnt/etc/dconf/db/local.d/00-profile
@@ -51,6 +48,9 @@ mv /scripts/config/dconf.conf /mnt/etc/dconf/db/local.d/00-profile
 # Copy system source code
 cp -r /src /mnt/usr/src/system
 cp /src/system/target/release/system /mnt/usr/local/sbin/system
+  
+cp /scripts/config/.bashrc /mnt/home/$SYSTEM_USER/.bashrc
+chown $SYSTEM_USER:$SYSTEM_USER /mnt/home/$SYSTEM_USER/.bashrc
 
 cat <<EOF > /mnt/usr/src/system/.env
 SYSTEM_USER=$SYSTEM_USER
