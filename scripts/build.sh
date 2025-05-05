@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 # Install base system and packages required for setup (remaining packages will be installed as part of setup)
-pacstrap -cKP /mnt base base-devel linux linux-firmware linux-headers sof-firmware git networkmanager wget
+pacstrap -cKP /mnt base base-devel linux linux-firmware linux-headers sof-firmware git networkmanager wget iptables-nft
 
 # Configure mkinitcpio to generate UKI images
 cp /scripts/config/linux.preset /mnt/etc/mkinitcpio.d/linux.preset
