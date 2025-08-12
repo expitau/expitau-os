@@ -12,63 +12,68 @@ in
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./lxd.nix
       (import "${home-manager}/nixos")
     ];
   nix.settings.experimental-features = [ "flakes" "nix-command" ];
+
+  # System packages
+  nixpkgs.config.allowUnfree = true;
+  environment.systemPackages = with pkgs; [
+    git
+    vscode
+    fastfetch
+    discord
+    pika-backup
+    mission-center
+    krita
+    slack
+    alsa-utils
+
+    gnomeExtensions.blur-my-shell
+    gnomeExtensions.color-picker
+    gnomeExtensions.caffeine
+  ];
+  programs.steam.enable = true;
+
+  users.users.nathan = {
+    isNormalUser = true;
+    description = "nathan";
+    extraGroups = [ "networkmanager" "wheel" "lxd" ];
+    packages = with pkgs; [
+      # User-specific packages
+    ];
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.plymouth.enable = true;
 
-  # Enable LXD
-  virtualisation.lxd = {
-    enable = true;
-    recommendedSysctlSettings = true;
-  };
-  networking.firewall = {
-    trustedInterfaces = [ "lxdbr0" ];
-    extraCommands = ''
-      iptables -A FORWARD -i eth0 -o lxdbr0 -j ACCEPT
-      iptables -A FORWARD -i lxdbr0 -o eth0 -j ACCEPT
-    '';
-  };
-  networking.nat = {
-    enable = true;
-    internalInterfaces = [ "lxdbr0" ];
-    externalInterface = "wlp0s20f3";
-  };
-  systemd.services."lxdbr0-resolved" = {
-    description = "Attach LXD DNS to lxdbr0 for *.lxd";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    serviceConfig.Type = "oneshot";
-    script = ''
-      /run/current-system/sw/bin/resolvectl dns lxdbr0 10.55.95.1
-      /run/current-system/sw/bin/resolvectl domain lxdbr0 '~lxd'
-    '';
-    wantedBy = [ "multi-user.target" ];
-  };
-
   networking.hostName = "nixos-xps";
+
+  # Home Manager configuration
+  home-manager.backupFileExtension = "nix-backup";
+  home-manager.users.nathan = import ./home.nix;
 
   # Enable networking
   networking.networkmanager.enable = true;
   services.resolved.enable = true;
 
-  # Set your time zone.
+  # Timezone, locale, keymap
   time.timeZone = "America/Toronto";
-
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_CA.UTF-8";
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "";
+  };
 
-  # Enable the X11 windowing system.
+  # Window manager and desktop environment
   services.xserver = {
     enable = true;
     excludePackages = [ pkgs.xterm ];
   };
 
-  # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
   environment.gnome.excludePackages = [
@@ -89,11 +94,6 @@ in
     pkgs.yelp
   ];
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -107,261 +107,25 @@ in
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+  systemd.services.mic-alsa-setup = {
+    description = "Set ALSA capture path for internal mic (rt714)";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "sound.target" "wireplumber.service" ]; # wireplumber if you use PipeWire
+    serviceConfig.Type = "oneshot";
+    script = ''
+      # Target the sof-soundwire card; adjust -c if your card index/name differs.
+      ${pkgs.alsa-utils}/bin/amixer -c 0 cset name='PGA5.0 5 Master Capture Switch' on,on
+      ${pkgs.alsa-utils}/bin/amixer -c 0 cset name='PGA5.0 5 Master Capture Volume' 70,70
+      ${pkgs.alsa-utils}/bin/amixer -c 0 cset name='rt714 ADC 22 Mux' 4
+    '';
+  };
 
+  # Input and fingerprint
   services.fprintd.enable = true;
-
   services.libinput.enable = true;
-
-  users.users.nathan = {
-    isNormalUser = true;
-    description = "nathan";
-    extraGroups = [ "networkmanager" "wheel" "lxd" ];
-    packages = with pkgs; [
-      #  thunderbird
-    ];
-  };
-
-  home-manager.backupFileExtension = "nix-backup";
-  home-manager.users.nathan = { pkgs, config, ... }: {
-    home.stateVersion = "25.05";
-
-    home.file = {
-      ".bashrc".text = ''
-        #
-        # ~/.bashrc
-        #
-
-        # If not running interactively, don't do anything
-        [[ $- != *i* ]] && return
-
-        bind '"\t":menu-complete'
-
-        alias ls='ls --color=auto'
-        alias grep='grep --color=auto'
-
-        # source /etc/profile.d/trueline.sh
-        prompt_command() {
-            local STATUS=$?;
-            local BRANCH=$(git branch --show-current 2>/dev/null);
-            
-            PS1="\n╭─ \w";
-            [ -n "$BRANCH" ] && PS1+=" \[\e[38;5;248m\]$BRANCH\[\e[0m\]";
-            [ "$STATUS" -ne 0 ] && PS1+=" \[\e[38;5;203m\]$STATUS\[\e[0m\]";
-            
-            PS1+="\n╰ ";
-            
-            if [[ "$(uname -n)" == *devbox* ]]; then
-                PS1+="\[\e[38;5;75;1m\]λ\[\e[0m\] ";
-            elif [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-                PS1+="\[\e[38;5;71;1m\]λ\[\e[0m\] ";
-            elif [ "$(whoami)" = "root" ]; then
-                PS1+="\[\e[38;5;203;1m\]λ\[\e[0m\] ";
-            else
-                PS1+="\[\e[38;5;141;1m\]λ\[\e[0m\] ";
-            fi
-        }
-
-        PROMPT_COMMAND='prompt_command'
-      '';
-
-      "Documents".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Documents";
-      "Games".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Games";
-      "Music".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Music";
-      "Scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Scripts";
-      "Pictures".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Pictures";
-      "Videos".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Videos";
-
-      ".config/StardewValley/Saves".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Stardew Valley";
-      ".local/share/Terraria".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Terraria";
-      ".factorio".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Factorio";
-      ".config/unity3d/Klei/OxygenNotIncluded".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Oxygen Not Included";
-      ".config/unity3d/Team Cherry/Hollow Knight".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Hollow Knight";
-      ".local/share/Steam/steamapps/common/Cuphead/Saves".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Cuphead";
-
-      ".config/Code".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/vscode";
-      ".config/discord".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/discord";
-      ".mozilla".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/firefox";
-      ".config/obsidian".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
-      ".local/share/.steam".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/steam";
-      ".ssh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/ssh";
-      ".gnupg".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/gnupg";
-    };
-
-    dconf.settings = {
-      "org/gnome/desktop/background" = {
-        picture-uri = "file:///home/nathan/Data/AppData/wallpaper.png";
-        picture-uri-dark = "file:///home/nathan/Data/AppData/wallpaper.png";
-      };
-
-      "org/gnome/desktop/screensaver" = {
-        picture-uri = "file:///home/nathan/Data/AppData/wallpaper.png";
-        picture-uri-dark = "file:///home/nathan/Data/AppData/wallpaper.png";
-      };
-
-      "org/gnome/desktop/interface" = {
-        color-scheme = "prefer-dark";
-        clock-format = "12h";
-        clock-show-seconds = false;
-        clock-show-weekday = false;
-      };
-
-      "org/gnome/desktop/datetime" = {
-        automatic-timezone = false;
-      };
-
-      "org/gnome/desktop/peripherals/touchpad" = {
-        disable-while-typing = true;
-        two-finger-scrolling-enabled = true;
-      };
-
-      "org/gnome/desktop/sound" = {
-        allow-volume-above-100-percent = true;
-      };
-
-      "org/gnome/login-screen" = {
-        enable-fingerprint-authentication = true;
-        enable-smartcard-authentication = false;
-      };
-
-      "org/gnome/mutter" = {
-        workspaces-only-on-primary = false;
-      };
-
-      "org/gnome/settings-daemon/plugins/color" = {
-        night-light-enabled = true;
-        night-light-schedule-automatic = false;
-        night-light-schedule-from = 21.0;
-        night-light-temperature = 2700;
-      };
-
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-        binding = "<Control><Alt><Super>b";
-        command = "firefox https://meet.google.com/npf-febz-wzr";
-        name = "Launch bean call";
-      };
-
-      "org/gnome/settings-daemon/plugins/power" = {
-        ambient-enabled = false;
-      };
-
-      "org/gnome/system/location" = {
-        enabled = false;
-      };
-
-      "org/gnome/shell/keybindings" = {
-        show-screenshot-ui = [ "<Shift><Super>s" ];
-      };
-
-      "org/gnome/shell/extensions/color-picker" = {
-        color-picker-shortcut = [ "<Shift><Super>c" ];
-        enable-preview = true;
-        enable-shortcut = true;
-        enable-sound = false;
-        enable-systray = false;
-        format-menu = false;
-      };
-
-      "org/gnome/shell" = {
-        enabled-extensions = [
-          "blur-my-shell@aunetx"
-          "color-picker@tuberry"
-          "caffeine@patapon.info"
-        ];
-        favorite-apps = [
-          "firefox.desktop"
-          "org.gnome.Nautilus.desktop"
-          "org.gnome.TextEditor.desktop"
-          "code.desktop"
-          "org.gnome.Console.desktop"
-          "discord.desktop"
-        ];
-      };
-
-      "org/gnome/Weather" = {
-        locations = [
-          # Waterloo coordinates
-          "(uint32 2, ('Waterloo', 'CYKF', true, [(0.75863645401796609, -1.402953824577011)], [(0.75863645401796609, -1.4055718184550026)]))"
-        ];
-      };
-
-      "org/gnome/calculator" = {
-        accuracy = 9;
-        angle-units = "degrees";
-        base = 10;
-        button-mode = "advanced";
-        number-format = "automatic";
-        refresh-interval = 604800;
-        show-thousands = false;
-        show-zeroes = false;
-        source-currency = "";
-        source-units = "degree";
-        target-currency = "";
-        target-units = "radian";
-        word-size = 64;
-      };
-
-      "org/gnome/calendar" = {
-        active-view = "month";
-      };
-
-      "org/gnome/nautilus/compression" = {
-        default-compression-format = "zip";
-      };
-
-      "org/gnome/nautilus/preferences" = {
-        default-folder-viewer = "list-view";
-        migrated-gtk-settings = true;
-        search-filter-time-type = "last_modified";
-      };
-
-      "org/gtk/gtk4/settings/file-chooser" = {
-        date-format = "regular";
-        location-mode = "path-bar";
-        show-hidden = false;
-        sort-column = "name";
-        sort-directories-first = false;
-        sort-order = "ascending";
-        type-format = "category";
-        view-type = "list";
-      };
-
-      "org/gtk/settings/file-chooser" = {
-        date-format = "regular";
-        location-mode = "path-bar";
-        show-hidden = false;
-        sort-column = "name";
-        sort-directories-first = false;
-        sort-order = "ascending";
-        type-format = "category";
-        view-type = "list";
-      };
-    };
-  };
 
   # Install firefox.
   programs.firefox.enable = true;
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    git
-    vscode
-    fastfetch
-    discord
-    pika-backup
-    mission-center
-    krita
-    slack
-    alsa-utils
-
-    gnomeExtensions.blur-my-shell
-    gnomeExtensions.color-picker
-    gnomeExtensions.caffeine
-  ];
 
   fonts.packages = [ pkgs.fira-code ];
 
@@ -372,7 +136,6 @@ in
     enable = true;
     enableSSHSupport = true;
   };
-  programs.steam.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
