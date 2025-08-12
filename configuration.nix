@@ -21,38 +21,40 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.plymouth.enable = true;
 
+  # Enable LXD
   virtualisation.lxd = {
     enable = true;
     recommendedSysctlSettings = true;
   };
-  virtualisation.lxc.lxcfs.enable = true;
-  networking.bridges = { lxdbr0.interfaces = []; };
-  networking.localCommands = ''
-    ip address add 192.168.57.1/24 dev lxdbr0
-  '';
-  networking.firewall.extraCommands = ''
-    iptables -A INPUT -i lxdbr0 -m comment --comment "LXD network lxdbr0" -j ACCEPT
-
-    # These three technically aren't needed, since by default the FORWARD and
-    # OUTPUT firewalls accept everything everything, but lets keep them in just
-    # in case.
-    iptables -A FORWARD -o lxdbr0 -m comment --comment "LXD network lxdbr0" -j ACCEPT
-    iptables -A FORWARD -i lxdbr0 -m comment --comment "LXD network lxdbr0" -j ACCEPT
-    iptables -A OUTPUT -o lxdbr0 -m comment --comment "LXD network lxdbr0" -j ACCEPT
-
-    iptables -t nat -A POSTROUTING -s 192.168.57.0/24 ! -d 192.168.57.0/24 -m comment --comment "LXD network lxdbr0" -j MASQUERADE
-  '';
-  boot.kernel.sysctl = {
-    "net.ipv4.conf.all.forwarding" = true;
-    "net.ipv4.conf.default.forwarding" = true;
+  networking.firewall = {
+    trustedInterfaces = [ "lxdbr0" ];
+    extraCommands = ''
+      iptables -A FORWARD -i eth0 -o lxdbr0 -j ACCEPT
+      iptables -A FORWARD -i lxdbr0 -o eth0 -j ACCEPT
+    '';
   };
-  boot.kernelModules = [ "nf_nat_ftp" ];
+  networking.nat = {
+    enable = true;
+    internalInterfaces = [ "lxdbr0" ];
+    externalInterface = "wlp0s20f3";
+  };
+  systemd.services."lxdbr0-resolved" = {
+    description = "Attach LXD DNS to lxdbr0 for *.lxd";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      /run/current-system/sw/bin/resolvectl dns lxdbr0 10.55.95.1
+      /run/current-system/sw/bin/resolvectl domain lxdbr0 '~lxd'
+    '';
+    wantedBy = [ "multi-user.target" ];
+  };
 
-  networking.hostName = "nixos-xps"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.hostName = "nixos-xps";
 
   # Enable networking
   networking.networkmanager.enable = true;
+  services.resolved.enable = true;
 
   # Set your time zone.
   time.timeZone = "America/Toronto";
@@ -106,12 +108,14 @@ in
     pulse.enable = true;
   };
 
+  services.fprintd.enable = true;
+
   services.libinput.enable = true;
 
   users.users.nathan = {
     isNormalUser = true;
     description = "nathan";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "lxd" ];
     packages = with pkgs; [
       #  thunderbird
     ];
@@ -185,13 +189,13 @@ in
 
     dconf.settings = {
       "org/gnome/desktop/background" = {
-        picture-uri = "file:///etc/nixos/wallpaper.png";
-        picture-uri-dark = "file:///etc/nixos/wallpaper.png";
+        picture-uri = "file:///home/nathan/Data/AppData/wallpaper.png";
+        picture-uri-dark = "file:///home/nathan/Data/AppData/wallpaper.png";
       };
 
       "org/gnome/desktop/screensaver" = {
-        picture-uri = "file:///etc/nixos/wallpaper.png";
-        picture-uri-dark = "file:///etc/nixos/wallpaper.png";
+        picture-uri = "file:///home/nathan/Data/AppData/wallpaper.png";
+        picture-uri-dark = "file:///home/nathan/Data/AppData/wallpaper.png";
       };
 
       "org/gnome/desktop/interface" = {
@@ -344,6 +348,7 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    git
     vscode
     fastfetch
     discord
@@ -351,6 +356,7 @@ in
     mission-center
     krita
     slack
+    alsa-utils
 
     gnomeExtensions.blur-my-shell
     gnomeExtensions.color-picker
@@ -358,8 +364,6 @@ in
   ];
 
   fonts.packages = [ pkgs.fira-code ];
-
-  
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
