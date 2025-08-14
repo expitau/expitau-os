@@ -2,18 +2,15 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
-let
-  home-manager = builtins.fetchTarball https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz;
-in
 {
   imports =
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lxd.nix
-      (import "${home-manager}/nixos")
+      inputs.home-manager.nixosModules.default
     ];
   nix.settings.experimental-features = [ "flakes" "nix-command" ];
 
@@ -29,6 +26,7 @@ in
     krita
     slack
     alsa-utils
+    gnumake
 
     gnomeExtensions.blur-my-shell
     gnomeExtensions.color-picker
@@ -50,7 +48,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.plymouth.enable = true;
 
-  networking.hostName = "nixos-xps";
+  networking.hostName = "expitau-nixos";
 
   # Nvidia
   services.xserver.videoDrivers = ["nvidia"];
@@ -79,7 +77,7 @@ in
     # supported GPUs is at: 
     # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus 
     # Only available from driver 515.43.04+
-    open = false;
+    open = true;
 
     # Enable the Nvidia settings menu,
 	# accessible via `nvidia-settings`.
@@ -117,8 +115,8 @@ in
     excludePackages = [ pkgs.xterm ];
   };
 
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
   environment.gnome.excludePackages = [
     pkgs.gnome-contacts
     pkgs.gnome-tour
