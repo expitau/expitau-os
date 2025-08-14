@@ -1,13 +1,15 @@
-.PHONY: switch upgrade update fmt format
+.PHONY: switch update-lockfile upgrade update fmt format
 
 switch:
 	sudo nixos-rebuild switch --flake /etc/nixos#expitau-nixos
 
-upgrade:
+update-lockfile:
 	sudo nix flake update
 
 fmt:
-	nix fmt
+	nixfmt *.nix
+
+upgrade: update-lockfile switch
 
 update: upgrade
 

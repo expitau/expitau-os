@@ -1,4 +1,4 @@
-{ pkgs, config, ... }: 
+{ pkgs, config, ... }:
 
 {
 
@@ -41,27 +41,41 @@
       PROMPT_COMMAND='prompt_command'
     '';
 
-    "Documents".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Documents";
+    "Documents".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Documents";
     "Games".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Games";
     "Music".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Music";
     "Scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Scripts";
-    "Pictures".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Pictures";
+    "Pictures".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Pictures";
     "Videos".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Videos";
 
-    ".config/StardewValley/Saves".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Stardew Valley";
-    ".local/share/Terraria".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Terraria";
-    ".factorio".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Factorio";
-    ".config/unity3d/Klei/OxygenNotIncluded".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Oxygen Not Included";
-    ".config/unity3d/Team Cherry/Hollow Knight".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Hollow Knight";
-    ".local/share/Steam/steamapps/common/Cuphead/Saves".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Cuphead";
+    ".config/StardewValley/Saves".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Stardew Valley";
+    ".local/share/Terraria".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Terraria";
+    ".factorio".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Factorio";
+    ".config/unity3d/Klei/OxygenNotIncluded".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Oxygen Not Included";
+    ".config/unity3d/Team Cherry/Hollow Knight".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Hollow Knight";
+    ".local/share/Steam/steamapps/common/Cuphead/Saves".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Cuphead";
 
-    ".config/Code".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/vscode";
-    ".config/discord".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/discord";
-    ".mozilla".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/firefox";
-    ".config/obsidian".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
-    ".local/share/.steam".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/steam";
+    ".config/Code".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/vscode";
+    ".config/discord".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/discord";
+    ".mozilla".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/firefox";
+    ".config/obsidian".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
+    ".local/share/.steam".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/steam";
     ".ssh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/ssh";
-    ".gnupg".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/gnupg";
+    ".gnupg".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/gnupg";
   };
 
   dconf.settings = import ./dconf.nix;

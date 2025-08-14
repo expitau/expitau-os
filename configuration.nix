@@ -2,17 +2,25 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, inputs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ./lxd.nix
-      inputs.home-manager.nixosModules.default
-    ];
-  nix.settings.experimental-features = [ "flakes" "nix-command" ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    ./lxd.nix
+    inputs.home-manager.nixosModules.default
+  ];
+  nix.settings.experimental-features = [
+    "flakes"
+    "nix-command"
+  ];
 
   # System packages
   nixpkgs.config.allowUnfree = true;
@@ -27,6 +35,7 @@
     slack
     alsa-utils
     gnumake
+    nixfmt
 
     gnomeExtensions.blur-my-shell
     gnomeExtensions.color-picker
@@ -37,7 +46,11 @@
   users.users.nathan = {
     isNormalUser = true;
     description = "Nathan";
-    extraGroups = [ "networkmanager" "wheel" "lxd" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "lxd"
+    ];
     packages = with pkgs; [
       # User-specific packages
     ];
@@ -51,7 +64,7 @@
   networking.hostName = "expitau-nixos";
 
   # Nvidia
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.graphics = {
     enable = true;
@@ -63,9 +76,9 @@
 
     # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
     # Enable this if you have graphical corruption issues or application crashes after waking
-    # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead 
+    # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead
     # of just the bare essentials.
-    powerManagement.enable = true;
+    powerManagement.enable = false;
 
     # Fine-grained power management. Turns off GPU when not in use.
     # Experimental and only works on modern Nvidia GPUs (Turing or newer).
@@ -73,14 +86,14 @@
 
     # Use the NVidia open source kernel module (not to be confused with the
     # independent third-party "nouveau" open source driver).
-    # Support is limited to the Turing and later architectures. Full list of 
-    # supported GPUs is at: 
-    # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus 
+    # Support is limited to the Turing and later architectures. Full list of
+    # supported GPUs is at:
+    # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus
     # Only available from driver 515.43.04+
     open = true;
 
     # Enable the Nvidia settings menu,
-	# accessible via `nvidia-settings`.
+    # accessible via `nvidia-settings`.
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
@@ -135,7 +148,6 @@
     pkgs.yelp
   ];
 
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -151,7 +163,10 @@
   systemd.services.mic-alsa-setup = {
     description = "Set ALSA capture path for internal mic (rt714)";
     wantedBy = [ "multi-user.target" ];
-    after = [ "sound.target" "wireplumber.service" ]; # wireplumber if you use PipeWire
+    after = [
+      "sound.target"
+      "wireplumber.service"
+    ]; # wireplumber if you use PipeWire
     serviceConfig.Type = "oneshot";
     script = ''
       # Target the sof-soundwire card; adjust -c if your card index/name differs.
