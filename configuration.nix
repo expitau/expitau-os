@@ -15,6 +15,7 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./lxd.nix
+    ./virtualization.nix
     inputs.home-manager.nixosModules.default
   ];
   nix.settings.experimental-features = [

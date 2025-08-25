@@ -60,8 +60,8 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Oxygen Not Included";
     ".config/unity3d/Team Cherry/Hollow Knight".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Hollow Knight";
-    ".local/share/Steam/steamapps/common/Cuphead/Saves".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Cuphead";
+    # ".local/share/Steam/steamapps/common/Cuphead/Saves".source =
+    #   config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Cuphead";
 
     ".config/Code".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/vscode";
@@ -71,7 +71,7 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/firefox";
     ".config/obsidian".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
-    ".local/share/.steam".source =
+    ".local/share/Steam".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/steam";
     ".ssh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/ssh";
     ".gnupg".source =

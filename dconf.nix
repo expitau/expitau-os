@@ -153,4 +153,9 @@
     type-format = "category";
     view-type = "list";
   };
+
+  "org/virt-manager/virt-manager/connections" = {
+    autoconnect = ["qemu:///system"];
+    uris = ["qemu:///system"];
+  };
 }
