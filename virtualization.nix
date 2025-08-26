@@ -13,4 +13,9 @@
   virtualisation.libvirtd.qemu.swtpm.enable = true;
 
   virtualisation.spiceUSBRedirection.enable = true;
+
+  # Add virt viewer package
+  environment.systemPackages = with pkgs; [
+    virt-viewer
+  ];
 }
