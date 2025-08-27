@@ -37,4 +37,8 @@
     '';
     wantedBy = [ "multi-user.target" ];
   };
+
+  environment.systemPackages = with pkgs; [
+    xorg.xhost
+  ];
 }
