@@ -45,7 +45,7 @@
       [Desktop Entry]
       Name=Windows 11 Sandbox
       Comment=Revert snapshot and launch virt-viewer for Windows 11
-      Exec=bash -c "virsh --connect qemu:///system snapshot-revert win11 --snapshotname Activation && virt-viewer --connect qemu:///system -f win11"
+      Exec=bash -c "virsh --connect qemu:///system snapshot-revert win11 --snapshotname Activation && virt-viewer --connect qemu:///system -f win11 && virsh --connect qemu:///system destroy win11"
       Terminal=false
       Type=Application
       Icon=computer
