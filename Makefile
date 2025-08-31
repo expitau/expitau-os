@@ -17,6 +17,9 @@ format: fmt
 
 clean:
 	sudo nix-collect-garbage --delete-older-than 7d
+	sudo nix profile wipe-history
+	nix store gc
+	sudo nix store optimise
 	sudo nixos-rebuild boot
 
 list:
