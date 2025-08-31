@@ -38,7 +38,6 @@
     gnumake
     tree
     nixfmt
-    onlyoffice-bin
 
     gnomeExtensions.blur-my-shell
     gnomeExtensions.color-picker
