@@ -149,7 +149,7 @@
     pkgs.seahorse
     pkgs.yelp
   ];
-
+ 
   # Enable CUPS to print documents.
   services.printing.enable = true;
 

@@ -1,6 +1,10 @@
 .PHONY: switch update-lockfile upgrade update fmt format
 
 switch:
+	NEXT_GENERATION=$$(($$(nix-env --list-generations | grep current | awk '{print $$1}')+1)) && \
+	git add . && \
+	git commit -S -m "Switch to generation $$CURRENT_GENERATION" && \
+	git push && \
 	sudo nixos-rebuild switch --flake /etc/nixos#expitau-nixos
 
 update-lockfile:
@@ -24,9 +28,3 @@ clean:
 
 list:
 	nix profile diff-closures --profile /nix/var/nix/profiles/system
-
-commit:
-	CURRENT_GENERATION=$$(nix-env --list-generations | grep current | awk '{print $$1}') && \
-	git add . && \
-	git commit -S -m "Update to generation $$CURRENT_GENERATION" && \
-	git push
