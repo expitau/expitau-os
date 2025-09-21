@@ -14,7 +14,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ./lxd.nix
+    ./lxc.nix
     ./virtualization.nix
     inputs.home-manager.nixosModules.default
   ];
@@ -51,7 +51,7 @@
     extraGroups = [
       "networkmanager"
       "wheel"
-      "lxd"
+      "incus-admin"
     ];
     packages = with pkgs; [
       # User-specific packages
