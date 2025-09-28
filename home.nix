@@ -41,52 +41,6 @@
       PROMPT_COMMAND='prompt_command'
     '';
 
-    ".local/share/applications/windows-sandbox.desktop".text = ''
-      [Desktop Entry]
-      Name=Windows Sandbox
-      Comment=Revert snapshot and launch virt-viewer for Windows
-      Exec=bash -c "virsh --connect qemu:///system snapshot-revert windows-sandbox --snapshotname Current && virt-viewer --connect qemu:///system -f windows-sandbox && virsh --connect qemu:///system destroy windows-sandbox"
-      Terminal=false
-      Type=Application
-      Icon=computer
-      Actions=NoExit;NoRevert;ConnectOnly;
-
-      [Desktop Action NoExit]
-      Name=Do not close after launch
-      Exec=bash -c "virsh --connect qemu:///system snapshot-revert windows-sandbox --snapshotname Current && virt-viewer --connect qemu:///system windows-sandbox"
-
-      [Desktop Action NoRevert]
-      Name=Do not revert snapshot
-      Exec=bash -c "virt-viewer --connect qemu:///system -f windows-sandbox && virsh --connect qemu:///system destroy windows-sandbox"
-
-      [Desktop Action ConnectOnly]
-      Name=Connect only
-      Exec=bash -c "virt-viewer --connect qemu:///system windows-sandbox"
-    '';
-
-    ".local/share/applications/ubuntu-sandbox.desktop".text = ''
-      [Desktop Entry]
-      Name=Ubuntu Sandbox
-      Comment=Revert snapshot and launch virt-viewer for Ubuntu
-      Exec=bash -c "virsh --connect qemu:///system snapshot-revert ubuntu-sandbox --snapshotname Current && virt-viewer --connect qemu:///system -f ubuntu-sandbox && virsh --connect qemu:///system destroy ubuntu-sandbox"
-      Terminal=false
-      Type=Application
-      Icon=computer
-      Actions=NoExit;NoRevert;ConnectOnly;
-
-      [Desktop Action NoExit]
-      Name=Do not close after launch
-      Exec=bash -c "virsh --connect qemu:///system snapshot-revert ubuntu-sandbox --snapshotname Current && virt-viewer --connect qemu:///system ubuntu-sandbox"
-
-      [Desktop Action NoRevert]
-      Name=Do not revert snapshot
-      Exec=bash -c "virt-viewer --connect qemu:///system -f ubuntu-sandbox && virsh --connect qemu:///system destroy ubuntu-sandbox"
-
-      [Desktop Action ConnectOnly]
-      Name=Connect only
-      Exec=bash -c "virt-viewer --connect qemu:///system ubuntu-sandbox"
-    '';
-
     "Documents".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Documents";
     "Games".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Games";
