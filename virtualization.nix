@@ -39,7 +39,7 @@
       [Desktop Entry]
       Name=Ubuntu Sandbox
       Comment=Revert snapshot and launch virt-viewer for Ubuntu
-      Exec=bash -c "/home/nathan/Data/AppData/libvirt/create-sandbox.sh windows-sandbox"
+      Exec=bash -c "/home/nathan/Data/AppData/libvirt/create-sandbox.sh ubuntu-sandbox"
       Terminal=false
       Type=Application
       Icon=computer
