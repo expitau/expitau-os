@@ -22,6 +22,6 @@
   networking.firewall.trustedInterfaces = [ "virbr0" ];
 
   home-manager.users.nathan.home.file = {
-    "Data/libvirt/edk-2-i386-vars.fd".source = "${pkgs.qemu}/share/qemu/edk2-i386-vars.fd";
+    "Data/AppData/libvirt/edk-2-i386-vars.fd".source = "${pkgs.qemu}/share/qemu/edk2-i386-vars.fd";
   };
 }
