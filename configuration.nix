@@ -16,6 +16,7 @@
     ./hardware-configuration.nix
     ./lxc.nix
     ./virtualization.nix
+    ./keysnek.nix
     inputs.home-manager.nixosModules.default
   ];
   nix.settings.experimental-features = [
