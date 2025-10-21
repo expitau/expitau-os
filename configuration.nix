@@ -32,6 +32,7 @@
     fastfetch
     discord
     pika-backup
+    thunderbird
     mission-center
     krita
     slack
@@ -57,6 +58,11 @@
     packages = with pkgs; [
       # User-specific packages
     ];
+  };
+
+
+  services.tailscale = {
+    enable = true;
   };
 
   # Bootloader.
@@ -108,6 +114,9 @@
       nvidiaBusId = "PCI:1:0:0";
     };
   };
+  boot.extraModprobeConfig = ''
+    options nvidia_modeset vblank_sem_control=0 nvidia NVreg_PreserveVideoMemoryAllocations=1  NVreg_TemporaryFilePath=/var/tmp
+  '';
 
   # Home Manager configuration
   home-manager.backupFileExtension = "nix-backup";

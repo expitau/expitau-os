@@ -7,5 +7,10 @@ git clone --branch nixos --single-branch https://github.com/expitau/expitau-os.g
 
 To build
 ```bash
-sudo nixos-rebuild switch
+./nixops.sh switch
+```
+
+To update
+```bash
+./nixops.sh update
 ```

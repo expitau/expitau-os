@@ -69,6 +69,8 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/discord";
     ".mozilla".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/firefox";
+    ".thunderbird".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/thunderbird";
     ".config/obsidian".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
     ".local/share/Steam".source =
