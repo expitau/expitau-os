@@ -17,6 +17,8 @@
     ./lxc.nix
     ./virtualization.nix
     ./keysnek.nix
+    # ./grapheneos.nix
+    # ./android.nix
     inputs.home-manager.nixosModules.default
   ];
   nix.settings.experimental-features = [
@@ -59,7 +61,6 @@
       # User-specific packages
     ];
   };
-
 
   services.tailscale = {
     enable = true;
@@ -159,7 +160,7 @@
     pkgs.seahorse
     pkgs.yelp
   ];
- 
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 

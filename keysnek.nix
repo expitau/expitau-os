@@ -19,7 +19,8 @@ let
       </busconfig>
     '';
   };
-in {
+in
+{
   services.dbus.enable = true;
   services.dbus.packages = [ keysnekSessionDBus ];
 }

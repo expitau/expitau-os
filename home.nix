@@ -75,9 +75,15 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
     ".local/share/Steam".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/steam";
+    ".config/pipewire/pipewire.conf".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/configs/pipewire.conf";
     ".ssh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/ssh";
     ".gnupg".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/gnupg";
+    ".nixos".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/nixos";
+    ".devbox".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/devbox";
   };
 
   dconf.settings = import ./dconf.nix;

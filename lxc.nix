@@ -54,7 +54,10 @@
   # Enable *.incus domains to be resolved via incusbr0
   systemd.services."incus-resolved" = {
     description = "Attach Incus DNS to incusbr0 for *.incus";
-    after = [ "network-online.target" "incus.service" ];
+    after = [
+      "network-online.target"
+      "incus.service"
+    ];
     requires = [ "incus.service" ];
     wants = [ "network-online.target" ];
     serviceConfig.Type = "oneshot";

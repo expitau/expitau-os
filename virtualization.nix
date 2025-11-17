@@ -23,7 +23,8 @@
 
   home-manager.users.nathan.home.file = {
     "Data/AppData/libvirt/edk2-i386-vars.fd".source = "${pkgs.qemu}/share/qemu/edk2-i386-vars.fd";
-    "Data/AppData/libvirt/edk2-x86_64-secure-code.fd".source = "${pkgs.qemu}/share/qemu/edk2-x86_64-secure-code.fd";
+    "Data/AppData/libvirt/edk2-x86_64-secure-code.fd".source =
+      "${pkgs.qemu}/share/qemu/edk2-x86_64-secure-code.fd";
 
     ".local/share/applications/windows-sandbox.desktop".text = ''
       [Desktop Entry]
