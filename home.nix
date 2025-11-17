@@ -75,6 +75,8 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/obsidian";
     ".local/share/Steam".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/steam";
+    ".config/pika-backup".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/pika";
     ".config/pipewire/pipewire.conf".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/configs/pipewire.conf";
     ".ssh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/ssh";
