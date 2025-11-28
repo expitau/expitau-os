@@ -49,6 +49,7 @@
     "Pictures".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Pictures";
     "Videos".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Videos";
+    "Downloads".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Cache/Downloads";
 
     ".config/StardewValley/Saves".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Stardew Valley";
@@ -60,7 +61,9 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Oxygen Not Included";
     ".config/unity3d/Team Cherry/Hollow Knight".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Hollow Knight";
-    # ".local/share/Steam/steamapps/common/Cuphead/Saves".source =
+    ".config/unity3d/Team Cherry/Hollow Knight Silksong".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Silksong";
+    # "Data/AppData/steam/steamapps/common/Cuphead/Saves".source =
     #   config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Cuphead";
 
     ".config/Code".source =

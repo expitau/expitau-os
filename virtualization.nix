@@ -17,6 +17,7 @@
   # Add virt viewer package
   environment.systemPackages = with pkgs; [
     virt-viewer
+    virtiofsd
   ];
 
   networking.firewall.trustedInterfaces = [ "virbr0" ];
