@@ -57,7 +57,7 @@
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Terraria";
     ".factorio".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Factorio";
-    ".config/unity3d/Klei/OxygenNotIncluded".source =
+    ".config/unity3d/Klei/Oxygen Not Included".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Oxygen Not Included";
     ".config/unity3d/Team Cherry/Hollow Knight".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Hollow Knight";
