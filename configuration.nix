@@ -42,6 +42,7 @@
     gnumake
     tree
     nixfmt
+    chromium
 
     gnomeExtensions.blur-my-shell
     gnomeExtensions.color-picker
@@ -69,7 +70,14 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.plymouth.enable = true;
+  boot.plymouth = {
+    enable = true;
+    theme = "bgrt";
+  };
+  boot.initrd.systemd.enable = true;
+  boot.kernelParams = [ "quiet" "udev.log_level=3" ];
+  
+  services.fwupd.enable = true;
 
   networking.hostName = "expitau-nixos";
 
