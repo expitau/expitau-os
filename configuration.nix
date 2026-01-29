@@ -17,6 +17,7 @@
     ./lxc.nix
     ./virtualization.nix
     ./keysnek.nix
+    ./localhost-certs.nix
     # ./grapheneos.nix
     # ./android.nix
     inputs.home-manager.nixosModules.default
@@ -75,8 +76,11 @@
     theme = "bgrt";
   };
   boot.initrd.systemd.enable = true;
-  boot.kernelParams = [ "quiet" "udev.log_level=3" ];
-  
+  boot.kernelParams = [
+    "quiet"
+    "udev.log_level=3"
+  ];
+
   services.fwupd.enable = true;
 
   networking.hostName = "expitau-nixos";

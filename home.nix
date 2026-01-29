@@ -49,7 +49,8 @@
     "Pictures".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Pictures";
     "Videos".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Videos";
-    "Downloads".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Cache/Downloads";
+    "Downloads".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Cache/Downloads";
 
     ".config/StardewValley/Saves".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Stardew Valley";
