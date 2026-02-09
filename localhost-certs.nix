@@ -5,9 +5,8 @@
   ...
 }:
 let
-  localhostCaPath = "/home/nathan/Data/AppData/configs/localhost-ca.crt";
+  certificate = builtins.readFile ./localhost-ca.crt;
 in
 {
-  security.pki.certificates =
-    if builtins.pathExists localhostCaPath then [ (builtins.readFile localhostCaPath) ] else [ ];
+  security.pki.certificates = [ certificate ];
 }

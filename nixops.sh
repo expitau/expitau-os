@@ -56,7 +56,7 @@ clean() {
   sudo nix profile wipe-history
   nix store gc
   sudo nix store optimise
-  sudo nixos-rebuild boot
+  sudo nixos-rebuild boot --flake path:.#expitau-nixos
 }
 
 list_profiles() {
