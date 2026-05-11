@@ -35,7 +35,7 @@ commit() {
 }
 
 switch() {
-  sudo nixos-rebuild switch --flake path:.#formic
+  sudo nixos-rebuild switch --flake path:.#$(hostname)
 }
 
 update_lockfile() {
@@ -56,7 +56,7 @@ clean() {
   sudo nix profile wipe-history
   nix store gc
   sudo nix store optimise
-  sudo nixos-rebuild boot --flake path:.#formic
+  sudo nixos-rebuild boot --flake path:.#$(hostname)
 }
 
 list_profiles() {
