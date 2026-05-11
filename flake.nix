@@ -13,12 +13,12 @@
   outputs =
     { self, nixpkgs, ... }@inputs:
     {
-      nixosConfigurations.expitau-nixos = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.formic = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
-          ./configuration.nix
           inputs.home-manager.nixosModules.default
+          ./configurations/formic/configuration.nix
         ];
       };
     };

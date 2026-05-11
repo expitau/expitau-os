@@ -5,6 +5,10 @@
   ...
 }:
 {
+  nixpkgs.config.permittedInsecurePackages = [
+    "minio-2025-10-15T17-29-55Z"
+  ];
+
   # Enable LXD
   virtualisation.incus.enable = true;
 
@@ -49,7 +53,10 @@
   };
 
   networking.nftables.enable = true;
-  networking.firewall.trustedInterfaces = [ "incusbr0" "tailscale0" ];
+  networking.firewall.trustedInterfaces = [
+    "incusbr0"
+    "tailscale0"
+  ];
 
   # Enable *.incus domains to be resolved via incusbr0
   systemd.services."incus-resolved" = {
@@ -69,6 +76,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    xorg.xhost
+    xhost
   ];
 }
