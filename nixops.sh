@@ -43,7 +43,7 @@ update_lockfile() {
 }
 
 fmt() {
-  nixfmt **/*.nix
+  nixfmt $(find . -iname "*.nix")
 }
 
 upgrade() {

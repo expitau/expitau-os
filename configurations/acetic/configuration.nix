@@ -5,29 +5,30 @@
 { config, pkgs, ... }:
 
 # Start with pkgs.alsa-ucm-conf
-let 
+let
   rootPath = ../..;
   custom-alsa-ucm-conf = pkgs.alsa-ucm-conf.overrideAttrs (oldAttrs: {
-  wttsrc = pkgs.fetchFromGitHub {
-    owner = "WeirdTreeThing";
-    repo = "alsa-ucm-conf-cros";
-    rev = "1908a457c7f2bf8b63264fe3b1e0522ea632ac5a";
-    hash = "sha256-h4qphJgXlEGMjpV4+llTaJeM3hoglmmgkXY8rOp+MAI=";
-  };
+    wttsrc = pkgs.fetchFromGitHub {
+      owner = "WeirdTreeThing";
+      repo = "alsa-ucm-conf-cros";
+      rev = "1908a457c7f2bf8b63264fe3b1e0522ea632ac5a";
+      hash = "sha256-h4qphJgXlEGMjpV4+llTaJeM3hoglmmgkXY8rOp+MAI=";
+    };
 
-  # Then copy WeirdTreeThing/ucm2 to the share/alsa directory in pkgs.alsa-ucm-conf
-  postInstall = ''
-    cp -rf $wttsrc/ucm2 $out/share/alsa/
-  '';
+    # Then copy WeirdTreeThing/ucm2 to the share/alsa directory in pkgs.alsa-ucm-conf
+    postInstall = ''
+      cp -rf $wttsrc/ucm2 $out/share/alsa/
+    '';
 
-  # Idk if we actually need this
-  meta = oldAttrs.meta // {
-    platforms = [
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
-  };
-}); in
+    # Idk if we actually need this
+    meta = oldAttrs.meta // {
+      platforms = [
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+    };
+  });
+in
 {
   imports = [
     (rootPath + /hardware-configuration.nix)
@@ -59,7 +60,12 @@ let
     #media-session.enable = true;
   };
 
+  services.logind.settings.Login = {
+    HandlePowerKey = "suspend";
+  };
+
   security.sudo.wheelNeedsPassword = false;
+  powerManagement.enable = false;
 
   services.openssh.enable = true;
   services.openssh.passwordAuthentication = false;

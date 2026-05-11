@@ -59,13 +59,19 @@
             "org/gnome/settings-daemon/plugins/media-keys" = {
               custom-keybindings = [
                 "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+                "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
               ];
             };
-
             "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-              binding = "<Control><Alt><Super>b";
-              command = "firefox -P Default https://meet.google.com/npf-febz-wzr";
-              name = "Launch bean call";
+              binding = "<Super>AudioRaiseVolume";
+              command = "sh -c \"nix run nixpkgs#gnome-randr -- modify eDP-1 --rotate inverted && firefox https://musescore.com/user/38065345/favorites\"";
+              name = "Music mode";
+            };
+
+            "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
+              binding = "<Super>AudioLowerVolume";
+              command = "nix run nixpkgs#gnome-randr -- modify eDP-1 --rotate normal";
+              name = "Uninvert display";
             };
 
             "org/gnome/settings-daemon/plugins/power" = {
