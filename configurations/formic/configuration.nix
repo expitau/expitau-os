@@ -14,7 +14,7 @@ let
 in
 {
   imports = [
-    ./hardware-configuration.nix
+    (rootPath + /hardware-configuration.nix)
 
     (rootPath + /modules/setup.nix)
     (rootPath + /modules/develop-certificates.nix)
