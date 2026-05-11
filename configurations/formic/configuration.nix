@@ -100,32 +100,6 @@ in
     options nvidia_modeset vblank_sem_control=0 nvidia NVreg_PreserveVideoMemoryAllocations=1  NVreg_TemporaryFilePath=/var/tmp
   '';
 
-  ### 5 - Window manager and desktop environment
-  services.xserver = {
-    enable = true;
-    excludePackages = [ pkgs.xterm ];
-  };
-
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-  environment.gnome.excludePackages = [
-    pkgs.gnome-contacts
-    pkgs.gnome-tour
-    pkgs.simple-scan
-    pkgs.gnome-system-monitor
-    pkgs.gnome-characters
-    pkgs.gnome-font-viewer
-    pkgs.gnome-maps
-    pkgs.gnome-music
-    pkgs.gnome-connections
-    pkgs.decibels
-    pkgs.epiphany
-    pkgs.file-roller
-    pkgs.geary
-    pkgs.seahorse
-    pkgs.yelp
-  ];
-
   # Input and fingerprint
   services.fprintd.enable = true;
   services.libinput.enable = true;
