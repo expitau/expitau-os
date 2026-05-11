@@ -5,12 +5,10 @@
   ...
 }:
 {
-  nixpkgs.config.permittedInsecurePackages = [
-    "minio-2025-10-15T17-29-55Z"
-  ];
-
   # Enable LXD
   virtualisation.incus.enable = true;
+
+  virtualisation.incus.bucketSupport = false;
 
   virtualisation.incus.preseed = {
     networks = [
