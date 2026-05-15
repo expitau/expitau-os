@@ -63,9 +63,9 @@
             };
 
             "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-              binding = "<Control><Alt><Super>b";
-              command = "firefox -P Default https://meet.google.com/npf-febz-wzr";
-              name = "Launch bean call";
+              binding = "<Control><Shift><Super>b";
+              command = "sh -c \"wpctl set-default \\$(wpctl status | grep -e \\\"Alder Lake .* DisplayPort 1\\\" | sed -nE 's/[^0-9]*([0-9]+).*$/\\1/p') && firefox -P Default https://www.primevideo.com/detail/0S1FYJ3LY9KTL9C7WFFAGA9F6F\"";
+              name = "Launch movie";
             };
 
             "org/gnome/settings-daemon/plugins/power" = {
