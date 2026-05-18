@@ -8,8 +8,6 @@
   # Enable LXD
   virtualisation.incus.enable = true;
 
-  virtualisation.incus.bucketSupport = false;
-
   virtualisation.incus.preseed = {
     networks = [
       {
