@@ -56,7 +56,7 @@
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Documents";
             "Games".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Games";
             "Music".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Music";
-            "Scripts".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Scripts";
+            "Projects".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Projects";
             "Pictures".source =
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Pictures";
             "Videos".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/Videos";
