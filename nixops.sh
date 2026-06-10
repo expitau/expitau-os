@@ -21,25 +21,14 @@ EOF
 }
 
 # --- Commands ---
-
-commit() {
-    if [[ -n "${2:-}" ]]; then
-        COMMIT_MESSAGE="$2"
-    else
-        NEXT_GENERATION=$(nix-env --list-generations | grep current | awk '{print $1}')
-        COMMIT_MESSAGE="Commit for generation $NEXT_GENERATION"
-    fi
-    git add .
-    git commit -S -m "$COMMIT_MESSAGE"
-    git push
-}
-
 switch() {
   sudo nixos-rebuild switch --flake path:.#$(hostname)
 }
 
 update_lockfile() {
   sudo nix flake update
+  git add flake.lock
+  git commit -S -m "$(date +'%Y %b %d') Update"
 }
 
 fmt() {
