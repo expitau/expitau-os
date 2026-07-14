@@ -10,7 +10,6 @@ usage() {
 Usage: $0 <command>
 
 Commands:
-  commit            Commit and push changes for Nix generation
   switch            Rebuild and switch to current NixOS configuration
   update-lockfile   Update the Nix flake lockfile
   fmt | format      Format .nix files
@@ -55,7 +54,6 @@ list_profiles() {
 # --- Main dispatcher ---
 
 case "${1:-}" in
-  commit) commit ;;
   switch) switch ;;
   update-lockfile) update_lockfile ;;
   fmt|format) fmt ;;
