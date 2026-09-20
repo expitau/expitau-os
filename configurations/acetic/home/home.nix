@@ -14,6 +14,13 @@
         }:
         {
           home.file = {
+            "Documents/sheetmusic".source = pkgs.runCommand "sheetmusic" {
+              nativeBuildInputs = [ pkgs.unzip ];
+            } ''
+              mkdir -p "$out"
+              unzip -q ${../../../assets/SheetMusic.zip} -d "$out"
+            '';
+
             ".bashrc".text = ''
               #
               # ~/.bashrc
