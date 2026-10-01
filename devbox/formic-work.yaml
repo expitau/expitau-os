@@ -1,0 +1,106 @@
+#cloud-config
+
+# TODO install bun
+hostname: formic-work
+users:
+  - name: nathan
+    primary_group: nathan
+    groups: sudo, docker
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG22iWrUnhnXf1BIIX+9gfHaKVNu82r/0U8/ZiVPJZXS nathan@formic
+package_update: true
+package_upgrade: true
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - wget
+  - unzip
+  - software-properties-common
+  - gnupg
+  - sudo
+  - lsb-release
+  - iputils-ping
+  - iproute2
+  - dnsutils
+  - nano
+  - git
+  - openssh-client
+  - openssh-server
+  - php
+  - graphviz
+  # - chromium-browser
+runcmd:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  - curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" | sudo tee /etc/apt/sources.list.d/1password.list && sudo mkdir -p /etc/debsig/policies/AC2D62742012EA22/ && curl -sS https://downloads.1password.com/linux/debian/debsig/1password.pol | sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol && sudo mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22 && curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
+  - sudo install -m 0755 -d /etc/apt/keyrings && curl -fsSL https://get.opentofu.org/opentofu.gpg | sudo tee /etc/apt/keyrings/opentofu.gpg >/dev/null && curl -fsSL https://packages.opentofu.org/opentofu/tofu/gpgkey | sudo gpg --no-tty --batch --dearmor -o /etc/apt/keyrings/opentofu-repo.gpg >/dev/null && sudo chmod a+r /etc/apt/keyrings/opentofu.gpg /etc/apt/keyrings/opentofu-repo.gpg && printf   "deb [signed-by=/etc/apt/keyrings/opentofu.gpg,/etc/apt/keyrings/opentofu-repo.gpg] https://packages.opentofu.org/opentofu/tofu/any/ any main\ndeb-src [signed-by=/etc/apt/keyrings/opentofu.gpg,/etc/apt/keyrings/opentofu-repo.gpg] https://packages.opentofu.org/opentofu/tofu/any/ any main" | sudo tee /etc/apt/sources.list.d/opentofu.list > /dev/null && sudo chmod a+r /etc/apt/sources.list.d/opentofu.list
+  - curl -sL https://deb.nodesource.com/setup_24.x -o /tmp/nodesource_setup.sh && chmod +x /tmp/nodesource_setup.sh && bash /tmp/nodesource_setup.sh
+  - curl -fsSL https://bun.com/install | bash
+  - add-apt-repository ppa:zhangsongcui3371/fastfetch
+  - apt update
+  - apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  - apt install -y fastfetch tofu 1password-cli nodejs
+  - systemctl enable docker
+  - systemctl disable apache2
+  - \[ ! -e /home/nathan/Data \] && ln -s /mnt/data /home/nathan/Data
+  - \[ ! -e /home/nathan/Projects \] && ln -s /home/nathan/Data/Projects /home/nathan/Projects
+  - |
+    if [ -d /home/nathan/.ssh ] && [ ! -L /home/nathan/.ssh ]; then
+      rm -rf /home/nathan/.ssh
+    fi
+    if [ ! -e /home/nathan/.ssh ]; then
+      ln -s /home/nathan/Data/AppData/ssh /home/nathan/.ssh
+      chown -h nathan:nathan /home/nathan/.ssh
+    fi
+  - chown nathan:nathan /home/nathan && chown nathan:nathan /home/nathan/Data && chown nathan:nathan /home/nathan/Projects
+  - chown nathan:nathan -R /home/nathan/.gnupg && chmod 700 /home/nathan/.gnupg && chmod 600 /home/nathan/.gnupg/gpg.asc
+  - sudo setcap cap_net_raw+ep /usr/bin/ping
+  - \[ ! -e /home/nathan/.sshd \] && mkdir /home/nathan/.sshd && mv /etc/ssh/*_key /etc/ssh/*_key.pub /home/nathan/.sshd && chown -R nathan:nathan /home/nathan/.sshd && chmod 700 /home/nathan/.sshd && chmod 600 /home/nathan/.sshd/*_key && chmod 644 /home/nathan/.sshd/*_key.pub
+  - printf 'HostKey /home/nathan/.sshd/ssh_host_rsa_key\nHostKey /home/nathan/.sshd/ssh_host_ecdsa_key\nHostKey /home/nathan/.sshd/ssh_host_ed25519_key\n' >> /etc/ssh/sshd_config
+  - systemctl restart --now ssh
+
+write_files:
+  - path: /home/nathan/.bashrc
+    owner: nathan:nathan
+    defer: true
+    content: |
+      #
+      # ~/.bashrc
+      #
+
+      # If not running interactively, don't do anything
+      [[ $- != *i* ]] && return
+
+      bind '"\t":menu-complete'
+
+      alias ls='ls --color=auto'
+      alias grep='grep --color=auto'
+
+      # source /etc/profile.d/trueline.sh
+      prompt_command() {
+          local STATUS=$?;
+          local BRANCH=$(git branch --show-current 2>/dev/null);
+          
+          PS1="\n╭─ \w";
+          [ -n "$BRANCH" ] && PS1+=" \[\e[38;5;248m\]$BRANCH\[\e[0m\]";
+          [ "$STATUS" -ne 0 ] && PS1+=" \[\e[38;5;203m\]$STATUS\[\e[0m\]";
+          
+          PS1+="\n╰ ";
+          
+          if [[ "$(uname -n)" == *dev* ]]; then
+              PS1+="\[\e[38;5;75;1m\]λ\[\e[0m\] ";
+          elif [[ "$(uname -n)" == *work* ]]; then
+              PS1+="\[\e[38;5;208m\]λ\[\e[0m\] ";
+          elif [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+              PS1+="\[\e[38;5;71;1m\]λ\[\e[0m\] ";
+          elif [ "$(whoami)" = "root" ]; then
+              PS1+="\[\e[38;5;203;1m\]λ\[\e[0m\] ";
+          else
+              PS1+="\[\e[38;5;141;1m\]λ\[\e[0m\] ";
+          fi
+      }
+
+      PROMPT_COMMAND='prompt_command'

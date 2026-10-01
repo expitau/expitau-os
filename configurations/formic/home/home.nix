@@ -5,6 +5,7 @@
 
   home-manager.users.nathan = {
     imports = [
+      (import ./gpg.nix)
       (
         {
           config,
@@ -98,36 +99,34 @@
             ".config/pipewire/pipewire.conf".source =
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/configs/pipewire.conf";
             ".ssh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/ssh";
-            ".gnupg".source =
-              config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/gnupg";
             ".nixos".source =
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/nixos";
             ".devbox".source =
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Data/AppData/devbox";
 
-            "Data/AppData/libvirt/edk2-i386-vars.fd".source = "${pkgs.qemu}/share/qemu/edk2-i386-vars.fd";
-            "Data/AppData/libvirt/edk2-x86_64-secure-code.fd".source =
-              "${pkgs.qemu}/share/qemu/edk2-x86_64-secure-code.fd";
+            # "Data/AppData/libvirt/edk2-i386-vars.fd".source = "${pkgs.qemu}/share/qemu/edk2-i386-vars.fd";
+            # "Data/AppData/libvirt/edk2-x86_64-secure-code.fd".source =
+            #   "${pkgs.qemu}/share/qemu/edk2-x86_64-secure-code.fd";
 
-            ".local/share/applications/windows-sandbox.desktop".text = ''
-              [Desktop Entry]
-              Name=Windows Sandbox
-              Comment=Revert snapshot and launch virt-viewer for Windows
-              Exec=bash -c "/home/nathan/Data/AppData/libvirt/create-sandbox.sh windows-sandbox"
-              Terminal=false
-              Type=Application
-              Icon=computer
-            '';
+            # ".local/share/applications/windows-sandbox.desktop".text = ''
+            #   [Desktop Entry]
+            #   Name=Windows Sandbox
+            #   Comment=Revert snapshot and launch virt-viewer for Windows
+            #   Exec=bash -c "/home/nathan/Data/AppData/libvirt/create-sandbox.sh windows-sandbox"
+            #   Terminal=false
+            #   Type=Application
+            #   Icon=computer
+            # '';
 
-            ".local/share/applications/ubuntu-sandbox.desktop".text = ''
-              [Desktop Entry]
-              Name=Ubuntu Sandbox
-              Comment=Revert snapshot and launch virt-viewer for Ubuntu
-              Exec=bash -c "/home/nathan/Data/AppData/libvirt/create-sandbox.sh ubuntu-sandbox"
-              Terminal=false
-              Type=Application
-              Icon=computer
-            '';
+            # ".local/share/applications/ubuntu-sandbox.desktop".text = ''
+            #   [Desktop Entry]
+            #   Name=Ubuntu Sandbox
+            #   Comment=Revert snapshot and launch virt-viewer for Ubuntu
+            #   Exec=bash -c "/home/nathan/Data/AppData/libvirt/create-sandbox.sh ubuntu-sandbox"
+            #   Terminal=false
+            #   Type=Application
+            #   Icon=computer
+            # '';
           };
         }
       )

@@ -1,0 +1,92 @@
+#cloud-config
+hostname: formic-dev
+users:
+  - name: nathan
+    primary_group: nathan
+    groups: docker,wheel
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG22iWrUnhnXf1BIIX+9gfHaKVNu82r/0U8/ZiVPJZXS nathan@formic
+package_update: true
+package_upgrade: true
+packages:
+  - systemd
+  - docker
+  - docker-compose
+  - git
+  - fastfetch
+  - php
+  - nodejs
+  - npm
+  - chromium
+  - nano
+  - curl
+  - wget
+  - unzip
+  - iputils
+  - iproute2
+  - dnsutils
+  - openssh
+  - noto-fonts
+  - ttf-firacode-nerd
+  - texlive-latexextra
+  - texlive-binextra
+  - sudo
+runcmd:
+  - systemctl enable --now docker
+  - usermod -aG docker nathan
+  - chown nathan:nathan /home/nathan
+  - chown nathan:nathan -R /home/nathan/.gnupg && chmod 700 /home/nathan/.gnupg && chmod 600 /home/nathan/.gnupg/gpg.asc
+  - sudo setcap cap_net_raw+ep /usr/bin/ping
+  - \[ ! -e /home/nathan/.sshd \] && mkdir /home/nathan/.sshd && mv /etc/ssh/*_key /etc/ssh/*_key.pub /home/nathan/.sshd && chown -R nathan:nathan /home/nathan/.sshd && chmod 700 /home/nathan/.sshd && chmod 600 /home/nathan/.sshd/*_key && chmod 644 /home/nathan/.sshd/*_key.pub
+  - printf 'HostKey /home/nathan/.sshd/ssh_host_rsa_key\nHostKey /home/nathan/.sshd/ssh_host_ecdsa_key\nHostKey /home/nathan/.sshd/ssh_host_ed25519_key\n' >> /etc/ssh/sshd_config
+  - systemctl restart --now sshd
+  - npm install -g pnpm yarn
+  - |
+    su - nathan -c '
+      curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    '
+
+write_files:
+  - path: /home/nathan/.bashrc
+    owner: nathan:nathan
+    defer: true
+    content: |
+      #
+      # ~/.bashrc
+      #
+
+      # If not running interactively, don't do anything
+      [[ $- != *i* ]] && return
+
+      bind '"\t":menu-complete'
+
+      alias ls='ls --color=auto'
+      alias grep='grep --color=auto'
+
+      # source /etc/profile.d/trueline.sh
+      prompt_command() {
+          local STATUS=$?;
+          local BRANCH=$(git branch --show-current 2>/dev/null);
+          
+          PS1="\n╭─ \w";
+          [ -n "$BRANCH" ] && PS1+=" \[\e[38;5;248m\]$BRANCH\[\e[0m\]";
+          [ "$STATUS" -ne 0 ] && PS1+=" \[\e[38;5;203m\]$STATUS\[\e[0m\]";
+          
+          PS1+="\n╰ ";
+          
+          if [[ "$(uname -n)" == *dev* ]]; then
+              PS1+="\[\e[38;5;75;1m\]λ\[\e[0m\] ";
+          elif [[ "$(uname -n)" == *work* ]]; then
+              PS1+="\[\e[38;5;208m\]λ\[\e[0m\] ";
+          elif [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+              PS1+="\[\e[38;5;71;1m\]λ\[\e[0m\] ";
+          elif [ "$(whoami)" = "root" ]; then
+              PS1+="\[\e[38;5;203;1m\]λ\[\e[0m\] ";
+          else
+              PS1+="\[\e[38;5;141;1m\]λ\[\e[0m\] ";
+          fi
+      }
+
+      PROMPT_COMMAND='prompt_command'
