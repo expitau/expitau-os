@@ -21,6 +21,11 @@ incus config device add $CONTAINER_NAME $CONTAINER_NAME-home disk \
     path="/home/nathan" \
     shift=true
 
+incus config device add $CONTAINER_NAME $CONTAINER_NAME-project disk \
+    source=/home/nathan/Data/Projects/Rust/Experiment/foil-fs \
+    path="/home/nathan/foil-fs" \
+    shift=true # Map uid mappings from host 1000 to container for permissions
+
 # Configuration
 echo "Starting container..."
 incus start $CONTAINER_NAME

@@ -7,7 +7,6 @@
     thunderbird
     krita
     slack
-    chromium
     prismlauncher # Minecraft launcher
     mission-center
 
