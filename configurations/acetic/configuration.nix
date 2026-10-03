@@ -68,8 +68,8 @@ in
   powerManagement.enable = false;
 
   services.openssh.enable = true;
-  services.openssh.passwordAuthentication = false;
-  services.openssh.permitRootLogin = "no";
+  services.openssh.settings.passwordAuthentication = false;
+  services.openssh.settings.permitRootLogin = "no";
   users.users.nathan.openssh.authorizedKeys.keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG22iWrUnhnXf1BIIX+9gfHaKVNu82r/0U8/ZiVPJZXS nathan@formic"
   ];
