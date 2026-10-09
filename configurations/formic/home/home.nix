@@ -69,6 +69,8 @@
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Stardew Valley";
             ".local/share/Terraria".source =
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Terraria";
+            ".local/share/Celeste".source =
+              config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Celeste";
             ".factorio".source =
               config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/Games/Factorio";
             ".config/unity3d/Klei/Oxygen Not Included".source =
