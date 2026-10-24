@@ -25,7 +25,7 @@ switch() {
 }
 
 update_lockfile() {
-  sudo nix flake update
+  sudo nix flake update --flake path:.
   git add flake.lock
   git commit -S -m "$(date +'%Y %b %d') Update"
 }

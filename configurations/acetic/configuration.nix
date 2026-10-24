@@ -19,27 +19,58 @@ let
     postInstall = ''
       cp -rf $wttsrc/ucm2 $out/share/alsa/
     '';
-
-    # Idk if we actually need this
-    meta = oldAttrs.meta // {
-      platforms = [
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
-    };
   });
 in
 {
   imports = [
     (rootPath + /hardware-configuration.nix)
 
-    (rootPath + /modules/setup.nix)
-
-    ./home/user.nix
-    ./home/packages.nix
-    ./home/home.nix
-    ./home/dconf.nix
+    ../shared/setup.nix
   ];
+
+  home-manager.users.nathan.home.file = {
+    ".bashrc".source = ../../assets/bashrc.bash;
+
+    "Documents/sheetmusic".source =
+      pkgs.runCommand "sheetmusic"
+        {
+          nativeBuildInputs = [ pkgs.unzip ];
+        }
+        ''
+          mkdir -p "$out"
+          unzip -q ${../../../assets/SheetMusic.zip} -d "$out"
+        '';
+  };
+  
+  home-manager.users.nathan.dconf.settings = {
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      custom-keybindings = [
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/"
+      ];
+    };
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+      binding = "<Super>AudioRaiseVolume";
+      command = "sh -c \"nix run nixpkgs#gnome-randr -- modify eDP-1 --rotate inverted && firefox https://musescore.com/user/38065345/favorites\"";
+      name = "Music mode";
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1" = {
+      binding = "<Super>AudioLowerVolume";
+      command = "nix run nixpkgs#gnome-randr -- modify eDP-1 --rotate normal";
+      name = "Uninvert display";
+    };
+  };
+
+  networking.hostName = "acetic";
+
+  environment.systemPackages = with pkgs; [
+    vscode
+  ];
+
+  services.tailscale.enable = true;
+
+  programs.firefox.enable = true;
 
   # Tell the environment variable to see our custom config
   environment.sessionVariables.ALSA_CONFIG_UCM2 = "${custom-alsa-ucm-conf}/share/alsa/ucm2";

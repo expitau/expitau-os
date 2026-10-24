@@ -11,6 +11,7 @@
 }:
 let
   rootPath = ../..;
+  home-config = config.home-manager.users.nathan;
 in
 {
   imports = [
@@ -23,14 +24,101 @@ in
     (../shared/setup.nix)
   ];
 
-  home-manager.users.nathan.imports = [
-    (import ./gpg.nix)
-    (import ./files.nix)
-    (import ./dconf.nix)
-  ];
+  home-manager.users.nathan.home.file = {
+    ".bashrc".source = ../../assets/bashrc.bash;
+
+    "Documents".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Documents";
+    "Games".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Games";
+    "Music".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Music";
+    "Projects".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Projects";
+    "Pictures".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Pictures";
+    "Videos".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Videos";
+    "Downloads".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Cache/Downloads";
+
+    ".config/StardewValley/Saves".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Stardew Valley";
+    ".local/share/Terraria".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Terraria";
+    ".local/share/Celeste".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Celeste";
+    ".factorio".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Factorio";
+    ".config/unity3d/Klei/Oxygen Not Included".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Oxygen Not Included";
+    ".config/unity3d/Team Cherry/Hollow Knight".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Hollow Knight";
+    ".config/unity3d/Team Cherry/Hollow Knight Silksong".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Silksong";
+    ".local/share/PrismLauncher/instances/Default/minecraft/saves".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Minecraft";
+    # "Data/AppData/steam/steamapps/common/Cuphead/Saves".source =
+    #   home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Cuphead";
+
+    ".config/Code".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/vscode";
+    ".config/discord".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/discord";
+    ".mozilla".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/firefox";
+    ".thunderbird".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/thunderbird";
+    ".config/obsidian".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/obsidian";
+    ".local/share/Steam".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/steam";
+    ".config/pika-backup".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/pika";
+    ".config/pipewire/pipewire.conf".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/configs/pipewire.conf";
+    ".ssh".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/ssh";
+    ".nixos".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/nixos";
+    ".devbox".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/devbox";
+  };
+
+  home-manager.users.nathan.dconf.settings = {
+    "org/gnome/login-screen" = {
+      enable-fingerprint-authentication = true;
+      enable-smartcard-authentication = false;
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      custom-keybindings = [
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+      ];
+    };
+
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+      binding = "<Control><Shift><Super>b";
+      command = "sh -c \"wpctl set-default \\$(wpctl status | grep -e \\\"Alder Lake .* DisplayPort 1\\\" | sed -nE 's/[^0-9]*([0-9]+).*$/\\1/p') && firefox -P Default https://www.netflix.com/browse\"";
+      name = "Launch movie";
+    };
+
+    "org/gnome/shell" = {
+      enabled-extensions = [
+        "blur-my-shell@aunetx"
+        "color-picker@tuberry"
+        "caffeine@patapon.info"
+        "gsconnect@andyholmes.github.io"
+      ];
+      favorite-apps = [
+        "firefox.desktop"
+        "org.gnome.Nautilus.desktop"
+        "org.gnome.TextEditor.desktop"
+        "code.desktop"
+        "org.gnome.Console.desktop"
+        "discord.desktop"
+        "slack.desktop"
+      ];
+    };
+  };
 
   networking.hostName = "formic";
-
 
   environment.systemPackages = with pkgs; [
     vscode
@@ -129,6 +217,4 @@ in
   # Input and fingerprint
   services.fprintd.enable = true;
   services.libinput.enable = true;
-
-  system.stateVersion = "25.05";
 }
