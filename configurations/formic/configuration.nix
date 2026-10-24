@@ -16,28 +16,55 @@ in
   imports = [
     (rootPath + /hardware-configuration.nix)
 
-    (rootPath + /modules/setup.nix)
-    (rootPath + /modules/develop-certificates.nix)
-
     (rootPath + /modules/install-incus.nix)
     (rootPath + /modules/install-keysnek.nix)
     (rootPath + /modules/install-virtualization.nix)
 
-    ./home/user.nix
-    ./home/packages.nix
-    ./home/home.nix
-    ./home/dconf.nix
+    (../shared/setup.nix)
   ];
 
-  # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
+  home-manager.users.nathan.imports = [
+    (import ./gpg.nix)
+    (import ./files.nix)
+    (import ./dconf.nix)
+  ];
+
+  networking.hostName = "formic";
+
+
+  environment.systemPackages = with pkgs; [
+    vscode
+    discord
+    pika-backup
+    thunderbird
+    krita
+    slack
+    prismlauncher # Minecraft launcher
+    mission-center
+
+    git
+    fastfetch
+    alsa-utils
+    gnumake
+    tree
+    nixfmt
+    # platformio
+
+    gnomeExtensions.blur-my-shell
+    gnomeExtensions.color-picker
+    gnomeExtensions.caffeine
+  ];
+
+  programs.steam.enable = true;
+  services.tailscale.enable = true;
+  programs.firefox.enable = true;
+
+  programs.kdeconnect = {
     enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
+    package = pkgs.gnomeExtensions.gsconnect;
   };
+
+  ### XPS specific audio fix
   systemd.services.mic-alsa-setup = {
     description = "Set ALSA capture path for internal mic (rt714)";
     wantedBy = [ "multi-user.target" ];
@@ -61,7 +88,6 @@ in
     enable = true;
   };
   hardware.nvidia = {
-
     # Modesetting is required.
     modesetting.enable = true;
 
@@ -104,11 +130,5 @@ in
   services.fprintd.enable = true;
   services.libinput.enable = true;
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = "25.05";
 }

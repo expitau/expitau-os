@@ -37,16 +37,10 @@ runcmd:
   - systemctl enable --now docker
   - usermod -aG docker nathan
   - chown nathan:nathan /home/nathan
-  - chown nathan:nathan -R /home/nathan/.gnupg && chmod 700 /home/nathan/.gnupg && chmod 600 /home/nathan/.gnupg/gpg.asc
   - sudo setcap cap_net_raw+ep /usr/bin/ping
   - \[ ! -e /home/nathan/.sshd \] && mkdir /home/nathan/.sshd && mv /etc/ssh/*_key /etc/ssh/*_key.pub /home/nathan/.sshd && chown -R nathan:nathan /home/nathan/.sshd && chmod 700 /home/nathan/.sshd && chmod 600 /home/nathan/.sshd/*_key && chmod 644 /home/nathan/.sshd/*_key.pub
   - printf 'HostKey /home/nathan/.sshd/ssh_host_rsa_key\nHostKey /home/nathan/.sshd/ssh_host_ecdsa_key\nHostKey /home/nathan/.sshd/ssh_host_ed25519_key\n' >> /etc/ssh/sshd_config
   - systemctl restart --now sshd
-  - npm install -g pnpm yarn
-  - |
-    su - nathan -c '
-      curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    '
 
 write_files:
   - path: /home/nathan/.bashrc

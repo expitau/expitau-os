@@ -9,22 +9,25 @@ incus delete $CONTAINER_NAME -f || true
 echo "Initializing container..."
 incus init $CONTAINER_IMAGE $CONTAINER_NAME \
     -c user.user-data="$(cat $CONTAINER_NAME.yaml)" \
-    -c limits.memory=16GB \
-    -c limits.cpu.allowance=50% \
+    -c limits.memory=24GB \
+    -c limits.processes=4000 \
+    -c limits.memory.swap=false \
     -c security.nesting=true
-
+    # -c limits.cpu=10 \
 # Mount disks
 echo "Mounting disks..."
+
+incus config device override formic-sandbox root size=100GiB
+
 mkdir -p /home/nathan/.devbox/$CONTAINER_NAME
 incus config device add $CONTAINER_NAME $CONTAINER_NAME-home disk \
     source=/home/nathan/.devbox/$CONTAINER_NAME \
-    path="/home/nathan" \
-    shift=true
+    path="/home/nathan"
 
-incus config device add $CONTAINER_NAME $CONTAINER_NAME-project disk \
-    source=/home/nathan/Data/Projects/Rust/Experiment/foil-fs \
-    path="/home/nathan/foil-fs" \
-    shift=true # Map uid mappings from host 1000 to container for permissions
+# incus config device add $CONTAINER_NAME $CONTAINER_NAME-project disk \
+#     source=/home/nathan/Data/Projects/Rust/Experiment/foil-fs \
+#     path="/home/nathan/foil-fs" \
+#     shift=true # Map uid mappings from host 1000 to container for permissions
 
 # Configuration
 echo "Starting container..."

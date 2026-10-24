@@ -51,7 +51,6 @@
   networking.nftables.enable = true;
   networking.firewall.trustedInterfaces = [
     "incusbr0"
-    "tailscale0"
   ];
 
   # Enable *.incus domains to be resolved via incusbr0
