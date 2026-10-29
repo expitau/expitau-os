@@ -99,6 +99,18 @@
             enable-systray = false;
             format-menu = false;
           };
+
+          "org/gnome/shell/extensions/blur-my-shell/dash-to-dock" = {
+            static-blur = true;
+            style-dash-to-dock = 0;
+          };
+          "org/gnome/shell/extensions/blur-my-shell/popup" = {
+            pipeline = "pipeline_classic_dark_background";
+            static-blur = false;
+            style-popup = 0;
+          };
+
+
           "org/gnome/shell" = {
             enabled-extensions = [
               "blur-my-shell@aunetx"

@@ -106,7 +106,14 @@
     tree
     nixfmt
 
-    gnomeExtensions.blur-my-shell
+    (gnomeExtensions.blur-my-shell.overrideAttrs (old: {
+      version = "77";
+      src = pkgs.fetchzip {
+        url = "https://extensions.gnome.org/extension-data/blur-my-shellaunetx.v77.shell-extension.zip";
+        hash = "sha256-Kxscapq5bqZypfhq7l70cglDcqMu4JbzU9krVonG/bw=";
+        stripRoot = false;
+      };
+    }))
     gnomeExtensions.color-picker
     gnomeExtensions.caffeine
   ];
