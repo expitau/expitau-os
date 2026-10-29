@@ -29,13 +29,16 @@ in
 
     "Documents".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Documents";
-    "Games".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Games";
-    "Music".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Music";
+    "Games".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Games";
+    "Music".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Music";
     "Projects".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Projects";
     "Pictures".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Pictures";
-    "Videos".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Videos";
+    "Videos".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Videos";
     "Downloads".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/Cache/Downloads";
 
@@ -74,7 +77,8 @@ in
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/pika";
     ".config/pipewire/pipewire.conf".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/configs/pipewire.conf";
-    ".ssh".source = home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/ssh";
+    ".ssh".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/ssh";
     ".nixos".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/nixos";
     ".devbox".source =

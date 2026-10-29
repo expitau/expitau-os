@@ -110,7 +110,6 @@
             style-popup = 0;
           };
 
-
           "org/gnome/shell" = {
             enabled-extensions = [
               "blur-my-shell@aunetx"

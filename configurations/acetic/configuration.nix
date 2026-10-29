@@ -41,7 +41,7 @@ in
           unzip -q ${../../../assets/SheetMusic.zip} -d "$out"
         '';
   };
-  
+
   home-manager.users.nathan.dconf.settings = {
     "org/gnome/settings-daemon/plugins/media-keys" = {
       custom-keybindings = [
