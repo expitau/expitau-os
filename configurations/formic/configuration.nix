@@ -18,6 +18,7 @@ in
     (rootPath + /hardware-configuration.nix)
 
     (rootPath + /modules/install-incus.nix)
+    (rootPath + /modules/install-rustdesk.nix)
     (rootPath + /modules/install-keysnek.nix)
     (rootPath + /modules/install-virtualization.nix)
 
