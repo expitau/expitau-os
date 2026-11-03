@@ -105,9 +105,6 @@ in
 
     "org/gnome/shell" = {
       enabled-extensions = [
-        "blur-my-shell@aunetx"
-        "color-picker@tuberry"
-        "caffeine@patapon.info"
         "gsconnect@andyholmes.github.io"
       ];
       favorite-apps = [
@@ -140,11 +137,6 @@ in
     gnumake
     tree
     nixfmt
-    # platformio
-
-    gnomeExtensions.blur-my-shell
-    gnomeExtensions.color-picker
-    gnomeExtensions.caffeine
   ];
 
   programs.steam.enable = true;
