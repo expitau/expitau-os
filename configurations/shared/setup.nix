@@ -117,7 +117,7 @@
     (gnomeExtensions.color-picker.overrideAttrs (old: {
       postPatch = (old.postPatch or "") + ''
         ${pkgs.jq}/bin/jq '."shell-version" += ["50.4"]' -i metadata.json > metadata.json
-      ''
+      '';
     }))
     gnomeExtensions.caffeine
   ];
