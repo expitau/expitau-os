@@ -58,8 +58,10 @@ in
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Silksong";
     ".local/share/PrismLauncher/instances/Default/minecraft/saves".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Minecraft";
-    # "Data/AppData/steam/steamapps/common/Cuphead/Saves".source =
-    #   home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Cuphead";
+    "Data/AppData/steam/steamapps/common/Cuphead/Saves".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/Cuphead";
+    "Data/AppData/steam/steamapps/compatdata/4087729048/pfx/drive_c/users/steamuser/AppData/Local/VotV/Saved".source =
+      home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Games/VotV/Data";
 
     ".config/Code".source =
       home-config.lib.file.mkOutOfStoreSymlink "${home-config.home.homeDirectory}/Data/AppData/vscode";
