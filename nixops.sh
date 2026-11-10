@@ -11,6 +11,7 @@ Usage: $0 <command>
 
 Commands:
   switch            Rebuild and switch to current NixOS configuration
+  push <target>     Push the current NixOS configuration to the target system
   update-lockfile   Update the Nix flake lockfile
   fmt | format      Format .nix files
   upgrade | update  Update flake and rebuild system
@@ -22,6 +23,11 @@ EOF
 # --- Commands ---
 switch() {
   sudo nixos-rebuild switch --flake path:.#$(hostname)
+}
+
+push() {
+  local target="$1"
+  nixos-rebuild switch --elevate=sudo --target-host "$target" --flake path:.#"$target"
 }
 
 update_lockfile() {
@@ -55,6 +61,7 @@ list_profiles() {
 
 case "${1:-}" in
   switch) switch ;;
+  push) push "$2" ;;
   update-lockfile) update_lockfile ;;
   fmt|format) fmt ;;
   upgrade|update) upgrade ;;

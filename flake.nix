@@ -30,6 +30,17 @@
             ./configurations/acetic/configuration.nix
           ];
         };
+        peracetic = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            inputs.home-manager.nixosModules.default
+            ./configurations/acetic/configuration.nix
+            ({ lib, ... }: {
+              networking.hostName = lib.mkForce "peracetic";
+            })
+          ];
+        };
       };
     };
 }

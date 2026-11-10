@@ -27,6 +27,7 @@
     "nix-command"
   ];
   nixpkgs.config.allowUnfree = true;
+  nix.settings.trusted-users = [ "root" "@wheel" ];
 
   ### Audio
   services.pulseaudio.enable = false;
