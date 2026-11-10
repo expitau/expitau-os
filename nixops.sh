@@ -28,7 +28,7 @@ switch() {
 
 push() {
   local target="$1"
-  nixos-rebuild switch --elevate=sudo --target-host "$target" --flake path:.#"$target"
+  ssh "$target" "cd ~/.nixos && git pull && sudo nixos-rebuild switch --flake path:.#"$target""
 }
 
 update_lockfile() {
