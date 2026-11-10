@@ -30,6 +30,7 @@ push() {
   local target="$1"
   # Only run if git up to date
   git diff --quiet || { echo "Git repository is not up to date. Please commit or stash changes."; exit 1; }
+  git push
   ssh "$target" "cd ~/.nixos && git pull && sudo nixos-rebuild switch --flake path:.#"$target""
 }
 
