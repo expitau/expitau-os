@@ -22,7 +22,8 @@ EOF
 
 # --- Commands ---
 switch() {
-  sudo nixos-rebuild switch --flake path:.#$(hostname)
+  local host="${1:-$(hostname)}"
+  sudo nixos-rebuild switch --flake path:.#"$host"
 }
 
 push() {
