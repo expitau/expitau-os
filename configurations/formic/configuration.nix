@@ -88,6 +88,16 @@ in
   };
 
   home-manager.users.nathan.dconf.settings = {
+    "org/gnome/desktop/background" = {
+      picture-uri = "file:///home/nathan/Data/AppData/wallpaper.png";
+      picture-uri-dark = "file:///home/nathan/Data/AppData/wallpaper.png";
+    };
+
+    "org/gnome/desktop/screensaver" = {
+      picture-uri = "file:///home/nathan/Data/AppData/wallpaper.png";
+      picture-uri-dark = "file:///home/nathan/Data/AppData/wallpaper.png";
+    };
+
     "org/gnome/login-screen" = {
       enable-fingerprint-authentication = true;
       enable-smartcard-authentication = false;

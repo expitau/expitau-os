@@ -40,9 +40,22 @@ in
           mkdir -p "$out"
           unzip -q ${../../assets/SheetMusic.zip} -d "$out"
         '';
+
+    "Documents/wallpaper.png".source = ../../assets/maze.png;
   };
 
   home-manager.users.nathan.dconf.settings = {
+
+    "org/gnome/desktop/background" = {
+      picture-uri = "file:///home/nathan/Documents/wallpaper.png";
+      picture-uri-dark = "file:///home/nathan/Documents/wallpaper.png";
+    };
+
+    "org/gnome/desktop/screensaver" = {
+      picture-uri = "file:///home/nathan/Documents/wallpaper.png";
+      picture-uri-dark = "file:///home/nathan/Documents/wallpaper.png";
+    };
+
     "org/gnome/settings-daemon/plugins/media-keys" = {
       custom-keybindings = [
         "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
