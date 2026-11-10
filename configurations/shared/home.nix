@@ -100,6 +100,7 @@
           };
 
           "org/gnome/shell" = {
+            always-show-log-out=true;
             enabled-extensions = [
               "blur-my-shell@aunetx"
               "color-picker@tuberry"
