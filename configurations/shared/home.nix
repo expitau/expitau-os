@@ -99,7 +99,6 @@
             enable-systray = false;
             format-menu = false;
           };
-
           "org/gnome/shell/extensions/blur-my-shell/dash-to-dock" = {
             static-blur = true;
             style-dash-to-dock = 0;
