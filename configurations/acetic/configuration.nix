@@ -73,6 +73,12 @@ in
       command = "nix run nixpkgs#gnome-randr -- modify eDP-1 --rotate normal";
       name = "Uninvert display";
     };
+
+    "org/gnome/shell" = {
+      enabled-extensions = [
+        "gsconnect@andyholmes.github.io"
+      ];
+    };
   };
 
   networking.hostName = "acetic";
@@ -84,6 +90,11 @@ in
   services.tailscale.enable = true;
 
   programs.firefox.enable = true;
+
+  programs.kdeconnect = {
+    enable = true;
+    package = pkgs.gnomeExtensions.gsconnect;
+  };
 
   # Tell the environment variable to see our custom config
   environment.sessionVariables.ALSA_CONFIG_UCM2 = "${custom-alsa-ucm-conf}/share/alsa/ucm2";
@@ -109,7 +120,6 @@ in
   };
 
   security.sudo.wheelNeedsPassword = false;
-  powerManagement.enable = false;
 
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
